@@ -1,0 +1,1167 @@
+-- Cache de costes por tercero/contexto
+CREATE TABLE IF NOT EXISTS llx_dolielec_cost_cache (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+  entity integer NOT NULL DEFAULT 1,
+  fk_thirdparty integer NOT NULL,
+  context_key varchar(64) NOT NULL,
+  value decimal(24,8) NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_entity_third_ctx (entity, fk_thirdparty, context_key)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Entrenamiento de biel
+CREATE TABLE IF NOT EXISTS llx_dolielec_biel_learn (
+rowid integer AUTO_INCREMENT primary key,
+entity integer not null default 1,
+fk_blockid integer not null,
+fk_sublock integer,
+ctx MEDIUMTEXT not null,
+tms timestamp not null default current_timestamp on update current_timestamp,
+unique key BlockLearningID(fk_blockid, fk_sublock))
+engine=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- frases para relación psicológica orientada
+create table if not exists llx_dolielec_rpo (
+rowid integer AUTO_INCREMENT primary key,
+entity integer not null default 1,
+rpoid varchar(10) not null,
+rpo_sentence varchar(255) not null,
+unique key RPO(rpoid))
+engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+-- normativa.
+create table if not exists llx_dolielec_rebt (
+  rowid integer AUTO_INCREMENT primary key,
+  entity integer not null default 1,
+  id varchar(20) not null,
+  idap tinyint not null,
+  idsubap tinyint not null,
+  ctx LONGTEXT not null,
+tms timestamp not null default current_timestamp on update current_timestamp,
+  unique key itc(id, idap, idsubap))
+engine=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc01', 0, 0, 'TERMINOLOGÍA
+CONSIDERACIONES GENERALES:
+Las definiciones específicas de los términos utilizados en las ITC particulares pueden encontrarse en el texto de dichas ITC.
+Para aquellos términos no definidos en la presente instrucción ni en las ITC particulares se aplicará lo dispuesto en la norma UNE 21.302
+DEFINICIÓN
+
+AISLAMIENTO DE UN CABLE
+Conjunto de materiales aislantes que forman parte de un cable y cuya función específica es soportar la tensión.
+AISLAMIENTO PRINCIPAL
+Aislamiento de las partes activas, cuyo deterioro podría provocar riesgo de choque eléctrico.
+AISLAMIENTO FUNCIONAL
+Aislamiento necesario para garantizar el funcionamiento normal y la protección fundamental contra los choques eléctricos.
+AISLAMIENTO REFORZADO
+Aislamiento cuyas características mecánicas y eléctricas hace que pueda considerarse equivalente a un doble aislamiento.
+AISLAMIENTO SUPLEMENTARIO
+Aislamiento independiente, previsto además del aislamiento principal, a efectos de asegurar la protección contra choque eléctrico en caso de deterioro del aislamiento principal.
+AISLANTE
+Substancia o cuerpo cuya conductividad es nula o, en la práctica, muy débil.
+ALTA SENSIBILIDAD
+Se consideran los interruptores diferenciales como de alta sensibilidad cuando el valor de esta es igual o inferior a 30 mA.
+AMOVIBLE
+Calificativo que se aplica a todo material instalado de manera que se pueda quitar fácilmente.
+APARATO AMOVIBLE
+Puede ser:
+– Aparato portátil a mano, cuya utilización, en uso normal, exige la acción constante de la misma.
+– Aparato movible, cuya utilización, en uso normal, puede necesitar su desplazamiento.
+– Aparato semi-fijo, solo puede ser desplazado cuando está sin tensión.
+APARATO DE CALDEO ELÉCTRICO
+Aparato que produce calor de forma deliberada por medio de fenómenos eléctricos. Destinado a elevar la temperatura de un determinado medio o fluido.
+APARAMENTA
+Equipo, aparato o material previsto para ser conectado a un circuito eléctrico con el fin de asegurar una o varias de las siguientes funciones: protección, control, seccionamiento, conexión.
+APARATO FIJO
+Es el que está instalado en forma inamovible.
+BANDEJA
+Material de instalación constituido por un perfil, de paredes perforadas o sin perforar, destinado a soportar cables y abierto en su parte superior.
+BASE MÓVIL
+Base prevista para conectarse a, o a integrarse con, cables flexibles y que puede desplazarse fácilmente cuando está conectada al circuito de alimentación
+BORNE O BARRA PRINCIPAL DE TIERRA
+Borne o barra prevista para la conexión a los dispositivos de puesta a tierra de los conductores de protección, incluyendo los conductores de equipotencialidad y eventualmente los conductores de puesta a tierra funcional.
+CABLE
+Conjunto constituido por:
+– Uno o varios conductores aislados
+– Su eventual revestimiento individual.
+– La eventual protección del conjunto
+– El o los eventuales revestimientos de protección que se dispongan
+Puede tener, además, uno o varios conductores no aislados.
+CABLE BLINDADO CON AISLAMIENTO MINERAL
+Cable aislado por una materia mineral y que tiene una cubierta de protección constituida por cobre, aluminio o aleación de éstos. Estas cubiertas, a su vez, pueden estar protegidas por un revestimiento adecuado.
+CABLE CON CUBIERTA ESTANCA
+Son aquellos cables que disponen de una cubierta interna o externa que proporcionan una protección eficaz contra la penetración de agua.
+CABLE FLEXIBLE
+Cable diseñado para garantizar una conexión deformable en servicio y en el que la estructura y la elección de los materiales son tales que cumplen las exigencias correspondientes.
+CABLE FLEXIBLE FIJADO PERMANENTEMENTE
+Cable flexible de alimentación a un aparato, unido a éste de manera que solo se pueda desconectar de él con ayuda de un útil.
+CABLE MULTICONDUCTOR
+Cable que incluye más de un conductor, algunos de los cuales puede no estar aislado.
+CABLE UNIPOLAR
+Cable que tiene un solo conductor aislado.
+CABLE CON NEUTRO CONCÉNTRICO
+Cable con un conductor concéntrico destinado a utilizarse como conductor de neutro.
+CANAL
+Recinto situado bajo el nivel del suelo o piso y cuyas dimensiones no permiten circular por él y que, en caso de ser cerrado, debe permitir el acceso a los cables en toda su longitud.
+CANALIZACIÓN AMOVIBLE
+Canalización que puede ser quitada fácilmente.
+
+CANALIZACIÓN ELÉCTRICA
+Conjunto constituido por uno o varios conductores eléctricos y los elementos que aseguran su fijación y, en su caso, su protección mecánica.
+CANALIZACIÓN FIJA
+Canalización instalada en forma inamovible, que no puede ser desplazada.
+CANALIZACIÓN MOVIBLE
+Canalización que puede ser desplazada durante su utilización.
+CANAL MOLDURA
+Variedad de canal de paredes llenas, de pequeñas dimensiones, conteniendo uno o varios alojamientos para conductores.
+CANAL PROTECTORA
+Material de instalación constituido por un perfil, de paredes llenas o perforadas, destinado a contener conductores y otros componentes eléctricos y cerrado por una tapa desmontable.
+CEBADO
+Establecimiento de un arco como consecuencia de una perforación de aislamiento.
+CERCA ELÉCTRICA
+Cerca formada por uno o varios conductores, sujetos a pequeños aisladores, montados sobre postes ligeros a una altura apropiada a los animales que se pretende alejar y electrizados de tal forma que las personas o los animales que los toquen no reciban descargas peligrosas.
+CIRCUITO
+Un circuito es un conjunto de materiales eléctricos (conductores, aparamenta, etc.) de diferentes fases o polaridades, alimentadas por la misma fuente de energía y protegidos contra las sobreintensidades por el o los mismos dispositivos de protección. No quedan incluidos en esta definición los circuitos que formen parte de los aparatos de utilización o receptores.
+CONDUCTO
+Envolvente cerrada destinada a alojar conductores aislados o cables en las instalaciones eléctricas, y que permiten su reemplazamiento por tracción.
+CONDUCTOR DE UN CABLE
+Parte de un cable que tiene la función específica de conducir corriente.
+CONDUCTOR AISLADO
+Conjunto que incluye el conductor, su aislamiento y sus eventuales pantallas.
+CONDUCTOR EQUIPOTENCIAL
+Conductor de protección que asegura una conexión equipotencial.
+CONDUCTOR FLEXIBLE
+Conductor constituido por alambres suficientemente finos y reunidos de forma que puedan utilizarse como un cable flexible.
+CONDUCTOR MEDIANO (VER PUNTO MEDIANO)
+CONDUCTOR DE PROTECCIÓN (CP o PE)
+Conductor requerido en ciertas medidas de protección contra choques eléctricos y que conecta alguna de las siguientes partes:
+– Masas
+ Elementos conductores
+– Borne principal de tierra
+– Toma de tierra
+– Punto de la fuente de alimentación unida a tierra o a un neutro artificial.
+CONDUCTOR NEUTRO
+Conductor conectado al punto de una red y capaz de contribuir al transporte de energía eléctrica.
+CONDUCTOR CPN o PEN
+Conductor puesto a tierra que asegura, al mismo tiempo, las funciones de conductor de protección y de conductor neutro.
+CONDUCTORES ACTIVOS
+Se consideran como conductores activos en toda instalación los destinados normalmente a la transmisión de la energía eléctrica. Esta consideración se aplica a los conductores de fase y al conductor neutro en corriente alterna y a los conductores polares y al compensador en corriente continua.
+CONECTOR
+Conjunto destinado a conectar eléctricamente un cable a un aparato eléctrico. Se compone de dos partes:
+– Una toma móvil, que es la parte que forma cuerpo con el conductor de alimentación.
+– Una base, que es la parte incorporada o fijada al aparato de utilización.
+CONEXIÓN EQUIPOTENCIAL
+Conexión eléctrica que pone al mismo potencial, o a potenciales prácticamente iguales, a las partes conductoras accesibles y elementos conductores.
+CONTACTOR CON APERTURA AUTOMÁTICA
+Contactor electromagnético provisto de relés que producen su apertura en condiciones predeterminadas.
+CONTACTOR CON CONTACTOS ABIERTOS EN REPOSO
+Aparato de interrupción no accionado manualmente, con una sola posición de reposo que corresponde a la apertura de sus contactos. El aparato está previsto, corrientemente, para maniobras frecuentes con cargas y sobrecargas normales.
+CONTACTOR CON CONTACTOS CERRADOS EN REPOSO
+Aparato de interrupción no accionado manualmente, con una sola posición de reposo que corresponde a la apertura de sus contactos. El aparato está previsto, corrientemente, para maniobras frecuentes con cargas y sobrecargas normales.
+CONTACTOR DE SOBRECARRERA
+Interruptor contactor de posición que entra en acción cuando un elemento móvil ha sobrepasado su posición de fin de carrera.
+CONTACTO DIRECTO
+Contacto de personas o animales con partes activas de los materiales y equipos.
+CONTACTO INDIRECTO
+Contacto de personas o animales domésticos con partes que se han puesto bajo tensión como resultado de un fallo de aislamiento.
+CORRIENTE DE CONTACTO
+Corriente que pasa a través de cuerpo humano o de un animal cuando esta sometido a una tensión eléctrica.
+CORRIENTE ADMISIBLE PERMANENTE (DE UN CONDUCTOR)
+Valor máximo de la corriente que circula permanentemente por un conductor, en condiciones específicas, sin que su temperatura de régimen permanente supere un valor especificado.
+CORRIENTE CONVENCIONAL DE FUNCIONAMIENTO DE UN DISPOSITIVO DE PROTECCIÓN
+Valor especificado que provoca el funcionamiento del dispositivo de protección antes de transcurrir un intervalo de tiempo determinado de una duración especificada llamado tiempo convencional.
+CORRIENTE DE CORTOCIRCUITO FRANCO
+Sobreintensidad producida por un fallo de impedancia despreciable, entre dos conductores activos que presentan una diferencia de potencial en condiciones normales de servicio.
+CORRIENTE DE CHOQUE
+Corriente de contacto que podría provocar efectos fisiopatológicos.
+CORRIENTE DE DEFECTO O DE FALTA
+Corriente que circula debido a un defecto de aislamiento.
+CORRIENTE DE DEFECTO A TIERRA
+Corriente que en caso de un solo punto de defecto a tierra, se deriva por el citado punto desde el circuito averiado a tierra o partes conectadas a tierra.
+CORRIENTE DE FUGA EN UNA INSTALACIÓN
+Corriente que, en ausencia de fallos, se transmite a la tierra o a elementos conductores del circuito.
+CORRIENTE DE PUESTA A TIERRA
+Corriente total que se deriva a tierra a través de la puesta a tierra.
+Nota: la corriente de puesta a tierra es la parte de la corriente de defecto que provoca la elevación de potencial de una instalación de puesta a tierra.
+CORRIENTE DE SOBRECARGA DE UN CIRCUITO
+Sobreintensidad que se produce en un circuito, en ausencia de un fallo eléctrico.
+CORRIENTE DIFERENCIAL RESIDUAL
+Suma algebraica de los valores instantáneos de las corrientes que circulan a través de todos los conductores activos de un circuito, en un punto de una instalación eléctrica.
+CORRIENTE DIFERENCIAL RESIDUAL DE FUNCIONAMIENTO
+Valor de la corriente diferencial residual que provoca el funcionamiento de un dispositivo de protección.
+CORTACIRCUITO FUSIBLE
+Aparato cuyo cometido es el de interrumpir el circuito en el que está intercalado, por fusión de uno de sus elementos, cuando la intensidad que recorre el elemento sobrepasa, durante un tiempo determinado, un cierto valor.
+CORTE OMNIPOLAR
+Corte de todos los conductores activos. Puede ser:
+– Simultáneo, cuando la conexión y desconexión se efectúa al mismo tiempo en el conductor neutro o compensador y en las fases o polares.
+– No simultáneo, cuando la conexión del neutro o compensador se establece antes que las de las fases o polares y se desconectan éstas antes que el neutro o compensador.
+CUBIERTA DE UN CABLE
+Revestimiento tubular continuo y uniforme de material metálico o no metálico generalmente extruido.
+CHOQUE ELÉCTRICO
+Efecto fisiopatológico resultante del paso de corriente eléctrica a través del cuerpo humano o de un animal.
+DEDO DE PRUEBA O SONDA PORTÁTIL DE ENSAYO
+En un dispositivo de forma similar a un dedo, incluso en sus articulaciones internacionalmente normalizado, y que se destina a verificar si las partes activas de cualquier aparato o materias son accesibles o no al utilizador del mismo. Existen varios tipos de dedos de prueba, destinados a diferentes aparatos, según su clase, tensión, etc.
+DEFECTO FRANCO
+Defecto de aislamiento cuya impedancia puede considerarse nula.
+DEFECTO MONOFÁSICO A TIERRA
+Defecto de aislamiento entre un conductor y tierra.
+DOBLE AISLAMIENTO
+Aislamiento que comprende, a la vez, un aislamiento principal y un aislamiento suplementario.
+ELEMENTOS CONDUCTORES
+Todos aquellos que pueden encontrarse en un edificio, aparato, etc. y que son susceptibles de transferir una tensión, tales como: estructuras metálicas o de hormigón armado utilizadas en la construcción de edificios (p.e. armaduras, paneles, carpintería metálica, etc.) canalizaciones metálicas de agua, gas, calefacción, etc. y los aparatos no eléctricos conectados a ellas, si la unión constituye una conexión eléctrica (p.e. radiadores, cocinas, fregaderos metálicos, etc.), suelos y paredes conductores.
+ELEMENTO CONDUCTOR AJENO A LA INSTALACIÓN ELÉCTRICA
+Elemento que no forma parte de la instalación eléctrica y que es susceptible de introducir un potencial, generalmente el de tierra.
+ENVOLVENTE
+Elemento que asegura la protección de los materiales contra ciertas influencias externas y la protección, en cualquier dirección, ante contactos directos.
+FACTOR DE DIVERSIDAD
+Inverso del factor de simultaneidad.
+FACTOR DE SIMULTANEIDAD
+Relación entre la totalidad de la potencia instalada o prevista, para un conjunto de instalaciones o de máquinas, durante un período de tiempo determinado, y las sumas de las potencias máximas absorbidas individualmente por las instalaciones o por las máquinas.
+FUENTE DE ENERGÍA
+Aparato generador o sistema suministrador de energía eléctrica.
+FUENTE DE ALIMENTACIÓN DE ENERGÍA
+Lugar o punto donde una línea, una red, una instalación o un aparato recibe energía eléctrica que tiene que transmitir, repartir o utilizar.
+GAMA NOMINAL DE TENSIONES (Ver TENSIÓN NOMINAL DE UN APARATO)
+IMPEDANCIA
+Cociente de la tensión en los bornes de un circuito por la corriente que fluye por ellos. Esta definición sólo es aplicable a corrientes sinusoidales.
+IMPEDANCIA DEL CIRCUITO DE DEFECTO
+Impedancia total ofrecida al paso de una corriente de defecto.
+INSTALACIÓN ELÉCTRICA
+Conjunto de aparatos y de circuitos asociados, en previsión de un fin particular: producción, conversión, transformación, transmisión, distribución o utilización de la energía eléctrica.
+INSTALACIÓN ELÉCTRICA DE EDIFICIOS
+Conjunto de materiales eléctricos asociados a una aplicación determinada cuyas características están coordinadas.
+INSTALACIÓN DE PUESTA A TIERRA
+Conjunto de conexiones y dispositivos necesarios para poner a tierra, individual o colectivamente, un aparato o una instalación.
+INSTALACIONES PROVISIONALES
+Son aquellas que tienen, en tiempo, una duración limitada a las circunstancias que las motiven:
+Pueden ser:
+– DE REPARACIÓN. Las necesarias para paliar un incidente de explotación.
+– DE TRABAJOS. Las realizadas para permitir cambios o transformaciones de las instalaciones, sin interrumpir la explotación.
+– SEMI-PERMANENTES. Las destinadas a modificaciones de duración limitada, en el marco de actividades habituales de los locales en los que se repitan periódicamente (Ferias).
+– DE OBRAS. Son las destinadas a la ejecución de trabajos de construcción de edificios y similares.
+INTENSIDAD DE DEFECTO
+Valor que alcanza una corriente de defecto.
+INTERRUPTOR AUTOMÁTICO
+Interruptor capaz de establecer, mantener e interrumpir las intensidades de corriente de servicio, o de establecer e interrumpir automáticamente, en condiciones predeterminadas, intensidades de corriente anormalmente elevadas, tales como las corrientes de cortocircuito.
+INTERRUPTOR DE CONTROL DE POTENCIA Y MAGNETOTÉRMICO
+Aparato de conexión que integra todos los dispositivos necesarios para asegurar de forma coordinada:
+– Mando
+– Protección contra sobrecargas
+– Protección contra cortocircuitos
+INTERRUPTOR DIFERENCIAL
+Aparato electromecánico o asociación de aparatos destinados a provocar la apertura de los contactos cuando la corriente diferencial alcanza un valor dado.
+LÍNEA GENERAL DE DISTRIBUCIÓN
+Canalización eléctrica que enlaza otra canalización, un cuadro de mando y proteccióno un dispositivo de protección general con el origen de canalizaciones que alimentan distintos receptores, locales o emplazamientos.
+LUMINARIA
+Aparato de alumbrado que reparte, filtra o transforma la luz de una o varias lámparas y que comprende todos los dispositivos necesarios para fijar y proteger las lámparas (excluyendo las propias lámparas) y cuando sea necesario, los circuitos auxiliares junto con los medios de conexión al circuito de alimentación.
+MASA
+Conjunto de las partes metálicas de un aparato que, en condiciones normales, están aisladas de las partes activas.
+Las masas comprenden normalmente:
+– Las partes metálicas accesibles de los materiales y de los equipos eléctricos, separadas de las partes activas solamente por un aislamiento funcional, las cuales son susceptibles de ser puestas en tensión a consecuencia de un fallo de las disposiciones tomadas para asegurar su aislamiento. Este fallo puede resultar de un defecto del aislamiento funcional, o de las disposiciones de fijación y de protección.
+– Por tanto, son masas las partes metálicas accesibles de los materiales eléctricos, excepto los de Clase II, las armaduras metálicas de los cables y las condiciones metálicas de agua, gas, etc.
+– Los elementos metálicos en conexión eléctrica o en contacto con las superficies exteriores de materiales eléctricos, que estén separadas de las partes activas por aislamientos funcionales, lleven o no estas superficies exteriores algún elemento metálico.
+Por tanto son masas: las piezas metálicas que forman parte de las canalizaciones eléctricas, los soportes de aparatos eléctricos con aislamiento funcional, y las piezas colocadas en contacto con la envoltura exterior de estos aparatos.
+Por extensión, también puede ser necesario considerar como masas, todo objeto metálico situado en la proximidad de partes activas no aisladas, y que presenta un riesgo apreciable de encontrarse unido eléctricamente con estas partes activas, a consecuencia de un fallo de los medios de fijación (p.e. aflojamiento de una conexión, rotura de un conductor, etc.).
+NOTA: Una parte conductora que sólo puede ser puesta bajo tensión en caso de fallo a través de una masa, no puede considerarse como una masa.
+MATERIAL DE CLASE 0
+Material en el cual la protección contra el choque eléctrico, se basa en el aislamiento principal; lo que implica que no existe ninguna disposición prevista para la conexión de las partes activas accesibles, si las hay, a un conductor de protección que forme parte del cableado fijo de la instalación. La protección en caso de defecto en el aislamiento principal depende del entorno.
+MATERIAL DE CLASE I
+Material en el cual la protección contra el choque eléctrico no se basa únicamente en el aislamiento principal, sino que comporta una medida de seguridad complementaria en forma de medios de conexión de las partes conductoras accesibles a un conductor de protección puesto a tierra, que forma parte del cableado
+fijo de la instalación, de forma tal que las partes conductoras accesibles no puedan presentar tensiones peligrosas.
+MATERIAL DE CLASE II
+Material en el cual la protección contra el choque eléctrico no se basa únicamente en el aislamiento principal, sino que comporta medidas de seguridad complementarias, tales como el doble aislamiento o aislamiento reforzado. Estas medidas no suponen la utilización de puesta a tierra para la protección y no dependen de las condiciones de la instalación.
+Este material debe estar alimentado por cables con doble aislamiento o con aislamiento reforzado.
+MATERIAL DE CLASE III
+Material en el cual la protección contra el choque eléctrico no se basa en la alimentación a muy baja tensión y en el cual no se producen tensiones superiores a 50 V en c.a. ó a 75V en c.c.
+MATERIAL ELÉCTRICO
+Cualquier material utilizado en la producción, transformación, transporte, distribución o utilización de la energía eléctrica, como máquinas, transformadores, aparamenta, instrumentos de medida, dispositivos de protección, material para canalizaciones, receptores, etc.
+MATERIAL MÓVIL
+Material que se desplaza durante su funcionamiento, o que puede ser fácilmente desplazado, permaneciendo conectado al circuito de alimentación.
+MATERIAL PORTÁTIL (DE MANO)
+Material móvil previsto para ser tenido en la mano en uso normal, incluido el motor si este forma parte del material.
+NIVEL DE AISLAMIENTO
+Para un aparato determinado, característica definida por una o más tensiones especificadas de su aislamiento.
+NIVEL DE PROTECCIÓN (DE UN DISPOSITIVO DE PROTECCIÓN CONTRA SOBRETENSIONES)
+Son los valores de cresta de las tensiones más elevadas admisibles en los bornes de un dispositivo de protección cuando está sometido a sobretensiones de formas normalizadas y valores asignados bajo condiciones especificadas.
+PARTES ACCESIBLES SIMULTÁNEAMENTE
+Conductores o partes conductoras que pueden ser tocadas simultáneamente por una persona o, en su caso, por animales domésticos o ganado.
+NOTA: Las partes simultáneamente accesibles pueden ser: Partes activas, masas, elementos conductores, conductores de protección, tomas de tierra).
+PARTES ACTIVAS
+Conductores y piezas conductoras bajo tensión en servicio normal. Incluyen el conductor neutro o compensador y las partes a ellos conectadas. Excepcionalmente, las masas no se considerarán como partes activas cuando estén unidas al neutro con finalidad de protección contra contactos indirectos.
+PERFORACIÓN (RUPTURA ELÉCTRICA)
+Fallo dieléctrico de un aislamiento por defecto de un campo eléctrico elevado o por la degradación físico-química del material aislante.
+PERSONA ADIESTRADA
+Persona suficientemente informada o controlada por personas cualificadas que puede evitar los peligros que pueda presentar la electricidad.
+PERSONA CUALIFICADA
+Persona que teniendo conocimientos técnicos o experiencia suficiente puede evitar los peligros que pueda presentar la electricidad.
+PODER DE CIERRE
+El poder de cierre de un dispositivo, se expresa por la intensidad de corriente que este aparato es capaz de establecer, bajo una tensión dada, en las condiciones prescritas de empleo y de funcionamiento.
+PODER DE CORTE
+El poder de corte de un aparato, se expresa por la intensidad de corriente que este dispositivo es capaz de cortar, bajo una tensión de restablecimiento determinada, y en las condiciones prescritas de funcionamiento.
+POTENCIA PREVISTA O INSTALADA
+Potencia máxima capaz de suministrar una instalación a los equipos y aparatos conectados a ella, ya sea en el diseño de la instalación o en su ejecución, respectivamente.
+POTENCIA NOMINAL DE UN MOTOR
+Es la potencia mecánica disponible sobre su eje, expresada en vatios, kilovatios o megavatios.
+PROTECCIÓN CONTRA CHOQUES ELÉCTRICOS EN SERVICIO NORMAL
+Prevención de contactos peligrosos, de personas o animales, con las partes activas.
+PROTECCIÓN CONTRA CHOQUES ELÉCTRICOS EN CASO DE DEFECTO
+Prevención de contactos peligrosos de personas o de animales con:
+– Masas
+– Elementos conductores susceptibles de ser puestos bajo tensión en caso de defecto.
+PUNTO A POTENCIAL CERO
+Punto del terreno a una distancia tal de la instalación de toma de tierra, que el gradiente de tensión resulta despreciable, cuando pasa por dicha instalación una corriente de defecto.
+PUNTO MEDIANO
+Es el punto de un sistema de corriente continua o de alterna monofásica, que en las condiciones de funcionamiento previstas, presenta la misma diferencia de potencial, con relación a cada uno de los polos o fases del sistema. A veces se conoce también como punto neutro, por semejanza con los sistemas trifásicos.
+El conductor que tiene su origen en este punto mediano, se denomina conductor mediano, neutro o, en corriente continua, compensador.
+PUNTO NEUTRO
+Es el punto de un sistema polifásico que, en las condiciones de funcionamiento previstas, presenta la misma diferencia de potencial, con relación a cada
+uno de los polos o fases del sistema.
+REACTANCIA
+Es un dispositivo que se aplica para agregar a un circuito inductancia, con distintos objetos, por ejemplo: arranque de motores, conexión en paralelo de
+transformadores o regulación de corriente. Reactancia limitadora es la que se usa para limitar la corriente cuando se produzca un cortocircuito.
+RECEPTOR
+Aparato o máquina eléctrica que utiliza la energía eléctrica para un fin determinado.
+RED DE DISTRIBUCIÓN
+El conjunto de conductores con todos sus accesorios, sus elementos de sujeción, protección, etc., que une una fuente de energía con las instalaciones interiores o receptoras.
+RED POSADA
+Red posada, sobre fachada o muros, es aquella en que los conductores aislados se instalan sin quedar sometidos a esfuerzos mecánicos, a excepción de su
+propio peso.
+RED TENSADA
+Red tensada, sobre apoyos, es aquella en que los conductores se instalan con una tensión mecánica predeterminada, contemplada en las correspondientes tablas de tendido, mediante dispositivos de anclaje y suspensión.
+REDES DE DISTRIBUCIÓN PRIVADAS
+Son las destinadas, por un único usuario, a la distribución de energía eléctrica en Baja Tensión, a locales o emplazamiento de su propiedad o a otros especialmente autorizados por el Órgano Competente de la Administración. Las redes de distribución privadas pueden tener su origen:
+– En centrales de generación propia
+– En redes de distribución pública. En este caso, son aplicables en el punto de entrega de la energía, los preceptos fijados por los Reglamentos vigentes que regulen las actividades de distribución, comercialización y suministro de energía eléctrica, y en las especificaciones particulares de la empresa eléctrica, aprobadas oficialmente, si las hubiera.
+REDES DE DISTRIBUCIÓN PÚBLICA
+Son las destinadas al suministro de energía eléctrica en Baja Tensión a varios usuarios. En relación con este suministro son de aplicación para cada uno de ellos, los preceptos fijados por los Reglamentos vigentes que regulen las actividades de distribución, comercialización y suministro de energía eléctrica.
+Las redes de distribución pública pueden ser:
+– Pertenecientes a empresas distribuidoras de energía
+– De propiedad particular o colectiva
+RESISTENCIA LIMITADORA
+Resistencia que se intercala en un circuito para limitar la corriente circulante.
+RESISTENCIA DE PUESTA A TIERRA
+Relación entre la tensión que alcanza con respecto a un punto a potencial cero una instalación de puesta a tierra y la corriente que la recorre.
+RESISTENCIA GLOBAL O TOTAL DE TIERRA
+Es la resistencia de tierra medida en un punto, considerando la acción conjunta de la totalidad de las puestas a tierra.
+SOBREINTENSIDAD
+Toda corriente superior a un valor asignado.
+En los conductores, el valor asignado es la corriente admisible.
+SUELO O PARED NO CONDUCTOR
+Suelo o pared no susceptibles de propagar potenciales.
+Se considerará así el suelo (o la pared) que presentan una resistencia igual o superior a 50.000 Ω si la tensión nominal de la instalación es ≤ 500 V y
+una resistencia igual o superior a 100.000 Ω si es superior a 500 V.
+La medida de aislamiento de un suelo se efectúa recubriendo el suelo con una tela húmeda cuadrada de, aproximadamente 270 mm de lado, sobre la que se dispone
+una placa metálica no oxidada, cuadrada de 250 mm de lado y cargada con una masa M de, aproximadamente, 75 kg (peso medio de una persona).
+Se mide la tensión con la ayuda de un voltímetro de gran resistencia interna (Ri no inferior a 3.000 Ω, sucesivamente:
+– Entre un conductor de fase y la placa metálica, (U2)
+– Entre este mismo conductor de fase y una toma de tierra, eléctricamente distinta T, de resistencia despreciable con relación a Ri, se mide la tensión
+U1.
+La resistencia buscada viene dada por la fórmula...
+Se efectúan en un mismo local tres medidas por lo menos, una de las cuales sobre una superficie situada a un metro de un elemento conductor, si existe, en el local considerado.
+Ninguna de estas tres medidas debe ser inferior a 50.000 Ω para poder considerar el suelo como no conductor.
+Si el punto neutro de la instalación está aislado de tierra, es necesario, para realizar esta medida, poner temporalmente a tierra una de las fases no
+utilizada para la misma.
+TENSIÓN DE CONTACTO
+Tensión que aparece entre partes accesibles simultáneamente, al ocurrir un fallo de aislamiento.
+NOTAS:
+1. Por convenio este término solo se utiliza en relación con la protección contra contactos indirectos.
+2. En ciertos casos el valor de la tensión de contacto puede resultar influido notablemente por la impedancia que presenta la persona en contacto con esas partes.
+TENSIÓN DE DEFECTO
+Tensión que aparece a causa de un defecto de aislamiento, entre dos masas, entre una masa y un elemento conductor, o entre una masa y una toma de tierra de referencia, es decir, un punto en el que el potencial no se modifica al quedar la masa en tensión.
+TENSIÓN NOMINAL (O ASIGNADA)
+Valor convencional de la tensión con la que se denomina un sistema o instalación y, para los que ha sido previsto su funcionamiento y aislamiento. Para los sistemas trifásicos se considera como tal la tensión compuesta.
+TENSIÓN NOMINAL DE UNA INSTALACIÓN
+Tensión por la que se designa una instalación o una parte de la misma.
+TENSIÓN NOMINAL DE UN APARATO
+Tensión prevista de alimentación del aparato y por la que se le designa.
+Gama nominal de tensiones: Intervalo entre los límites de tensión previstas para alimentar el aparato.
+En caso de alimentación trifásica, la tensión nominal se refiere a la tensión entre fases.
+TENSIÓN ASIGNADA DE UN CABLE
+Es la tensión máxima del sistema al que el cable puede estar conectado.
+TENSIÓN CON RELACIÓN O RESPECTO A TIERRA
+Se entiende como tensión con relación a tierra:
+– En instalaciones trifásicas con neutro aislado o no unido directamente a tierra, a la tensión nominal de la instalación.
+– En instalaciones trifásicas con neutro unido directamente a tierra, a la tensión simple de la instalación.
+– En instalaciones monofásicas o de corriente continua, sin punto de puesta a tierra, a la tensión nominal.
+– En instalaciones monofásicas o de corriente continua, con punto mediano puesto a tierra, a la mitad de la tensión nominal.
+NOTA: Se entiende por neutro unido directamente a tierra, la unión a la instalación de toma de tierra, sin interposición de una impedancia limitadora.
+TENSIÓN DE PUESTA A TIERRA (TENSIÓN A TIERRA)
+Tensión entre una instalación de puesta a tierra y un punto a potencial cero, cuando pasa por dicha instalación una corriente de defecto.
+TIERRA
+Masa conductora de la tierra en la que el potencial eléctrico en cada punto se toma, convencionalmente, igual a cero.
+TIERRA LEJANA
+Electrodo de tierra conectado a un aparato y situado a una distancia suficiente del mismo para que sea independiente de cualquier otro electrodo de tierra situado cerca del aparato.
+TOMA DE TIERRA
+Electrodo, o conjunto de electrodos, en contacto con el suelo y que asegura la conexión eléctrica con el mismo.
+TUBO BLINDADO
+Tubo que, además de tener las características del tubo normal, es capaz de resistir, después de su colocación, fuertes presiones y golpes repetidos, y que ofrece una resistencia notable a la penetración de objetos puntiagudos.
+TUBO NORMAL
+Tubo que es capaz de soportar únicamente los esfuerzos mecánicos que se producen durante su almacenado, transporte y colocación.
+SISTEMAS DE ALIMENTACIÓN PARA SERVICIOS DE SEGURIDAD
+El sistema comprende la fuente de alimentación y los circuitos, hasta los bornes de los aparatos de utilización. Sistema de alimentación previsto para mantener el funcionamiento de los aparatos esenciales para la seguridad de las personas.
+Ciertas instalaciones pueden incluir, también, en el suministro los equipos de utilización.
+SISTEMA DE DOBLE ALIMENTACIÓN
+Sistema de alimentación previsto para mantener el funcionamiento de la instalación o partes de ésta, en caso de fallo del suministro normal, por razones distintas a las que afectan a la seguridad de las personas.
+TEMPERATURA AMBIENTE
+Temperatura del aire u otro medio donde el material vaya a ser utilizado.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc03', 1, 0, 'La presente instrucción técnica complementaria tiene por objeto desarrollar las previsiones del artículo 22 del Reglamento electrotécnico para baja tensión,
+aprobado por Real Decreto 842/2002, de 2 de agosto, estableciendo las condiciones y requisitos que deben observarse para la certificación de la competencia
+y para la habilitación como empresa instaladora en el ámbito de aplicación de dicho reglamento.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc03', 2, 1, 'Empresa instaladora en baja tensión es la persona física o jurídica que realiza, mantiene o repara las instalaciones eléctricas en el ámbito del Reglamento
+electrotécnico para baja tensión, aprobado por Real Decreto 842/2002, de 2 de agosto, y sus instrucciones técnicas complementarias, habiendo presentado
+la correspondiente declaración responsable de inicio de actividad según lo prescrito en esta Instrucción Técnica Complementaria.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc03', 2, 2, 'Instalador en baja tensión es la persona física que tiene conocimientos para desempeñar alguna de las actividades correspondientes a las categorías
+indicadas en el apartado 3 de esta Instrucción Técnica Complementaria cumpliendo lo establecido en el apartado 4 de esta Instrucción Técnica Complementaria
+BT-03.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc03', 3, 0, 'Las Empresas instaladoras en Baja Tensión se clasifican en las siguientes categorías');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc03', 3, 1, 'Categoría básica (IBTB).–Las empresas instaladoras de esta categoría podrán realizar, mantener y reparar las instalaciones eléctricas para baja tensión
+en edificios, industrias, infraestructuras y, en general, todas las comprendidas en el ámbito del presente Reglamento Electrotécnico para Baja Tensión,
+que no se reserven a la categoría especialista (IBTE).');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 3, 2, 'Categoría especialista (IBTE).–Las empresas instaladoras de la categoría especialista podrán realizar, mantener y reparar las instalaciones de la categoría
+Básica y, además, las correspondientes a:
+− Sistemas de automatización, gestión técnica de la energía y seguridad para viviendas y edificios;
+− Sistemas de control distribuido;
+− Sistemas de supervisión, control y adquisición de datos;
+− Control de procesos;
+− Líneas aéreas o subterráneas para distribución de energía;
+− Locales con riesgo de incendio o explosión;
+− Quirófanos y salas de intervención;
+− Lámparas de descarga en alta tensión, rótulos luminosos y similares;
+− Instalaciones generadoras de baja tensión de potencia superior o igual a 10 kW; que estén contenidas en el ámbito del presente Reglamento electrotécnico
+para baja tensión y sus instrucciones técnicas complementarias La categoría especialista para las cuatro primeras modalidades de instalaciones (sistemas de automatización, gestión técnica de la energía y seguridad
+para viviendas y edificios; sistemas de control distribuido; sistemas de supervisión, control y adquisición de datos; y control de procesos) es única.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 4, 0, 'INSTALADOR EN BAJA TENSIÓN.
+El instalador en baja tensión deberá desarrollar su actividad en el seno de una empresa instaladora de baja tensión habilitada y deberá cumplir y poder
+acreditar ante la Administración competente cuando esta así lo requiera en el ejercicio de sus facultades de inspección, comprobación y control, una de
+las siguientes situaciones:
+a) Disponer de un título universitario cuyo ámbito competencial, atribuciones legales o plan de estudios cubra las materias objeto del Reglamento electrotécnico
+para baja tensión, aprobado por el Real Decreto 842/2002, de 2 de agosto, y de sus instrucciones técnicas complementarias.
+b) Disponer de un título de formación profesional o de un certificado de profesionalidad incluido en el Repertorio Nacional de Certificados de Profesionalidad,
+cuyo ámbito competencial incluya las materias objeto del Reglamento electrotécnico para baja tensión, aprobado por el Real Decreto 842/2002, de 2 de agosto,
+y de sus instrucciones técnicas complementarias.
+c) Tener reconocida una competencia profesional adquirida por experiencia laboral, de acuerdo con lo estipulado en el Real Decreto 1224/2009, de 17 de
+julio, de reconocimiento de las competencias profesionales adquiridas por experiencia laboral, en las materias objeto del Reglamento electrotécnico para
+baja tensión, aprobado por el Real Decreto 842/2002, de 2 de agosto, y de sus instrucciones técnicas complementarias.
+d) Tener reconocida la cualificación profesional de instalador en baja tensión adquirida en otro u otros Estados miembros de la Unión Europea, de acuerdo
+con lo establecido en el Real Decreto 581/2017, de 9 de junio, por el que se incorpora al ordenamiento jurídico español la Directiva 2013/55/UE del Parlamento
+Europeo y del Consejo, de 20 de noviembre de 2013, por la que se modifica la Directiva 2005/36/CE relativa al reconocimiento de cualificaciones profesionales
+y el Reglamento (UE) n.º 1024/2012 relativo a la cooperación administrativa a través del Sistema de Información del Mercado Interior (Reglamento IMI).
+e) Poseer una certificación otorgada por entidad acreditada para la certificación de personas por ENAC o cualquier otro Organismo Nacional de Acreditación
+designado de acuerdo a lo establecido en el Reglamento (CE) n.º 765/2008 del Parlamento Europeo y del Consejo, de 9 de julio de 2008, por el que se establecen
+los requisitos de acreditación y vigilancia del mercado relativos a la comercialización de los productos y por el que se deroga el Reglamento (CEE) n.º
+339/93, de acuerdo a la norma UNE-EN ISO/IEC 17024.
+Todas las entidades acreditadas para la certificación de personas que quieran otorgar estas certificaciones deberán incluir en su esquema de certificación
+un sistema de evaluación que incluya los contenidos mínimos que se indican en el Apéndice II de esta instrucción técnica complementaria.
+Cualquiera de las situaciones o titulaciones previstas (título universitario, título de formación profesional o certificado de profesionalidad, experiencia
+laboral reconocida o certificación otorgada por entidad acreditada) son válidas indistintamente para las distintas categorías de instalador de baja tensión,
+en función de los conocimientos acreditados.
+De acuerdo con la Ley 17/2009, de 23 de noviembre, sobre el libre acceso a las actividades de servicios y su ejercicio, el personal habilitado por una
+Comunidad Autónoma podrá ejecutar esta actividad dentro de una empresa instaladora en todo el territorio español, sin que puedan imponerse requisitos o
+condiciones adicionales.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 1, 'Antes de comenzar sus actividades como empresas instaladoras en baja tensión, las personas físicas o jurídicas que deseen establecerse en España deberán
+presentar ante el órgano competente de la comunidad autónoma en la que se establezcan una declaración responsable en la que el titular de la empresa o
+el representante legal de la misma declare para qué categoría, y en su caso, modalidad, va a desempeñar la actividad, que cumple los requisitos que se
+exigen por esta Instrucción Técnica Complementaria, que dispone de la documentación que así lo acredita, que se compromete a mantenerlos durante la vigencia de la actividad y que se responsabiliza de que la ejecución de las
+instalaciones se efectúa de acuerdo con las normas y requisitos que se establecen en el Reglamento electrotécnico para baja tensión, aprobado por el Real
+Decreto 842/2002, de 2 de agosto, y sus respectivas instrucciones técnicas complementarias.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 2, 'Las empresas instaladoras en baja tensión legalmente establecidos para el ejercicio de esta actividad en cualquier otro Estado miembro de la Unión
+Europea que deseen realizar la actividad en régimen de libre prestación en territorio español, deberán presentar, previo al inicio de la misma, ante el
+órgano competente de la comunidad autónoma donde deseen comenzar su actividad, una declaración responsable en la que el titular de la empresa o el representante
+legal de la misma declare para qué categoría, y en su caso, modalidad, va a desempeñar la actividad, que cumple los requisitos que se exigen por esta instrucción
+técnica complementaria, que dispone de la documentación que así lo acredita, que se compromete a mantenerlos durante la vigencia de la actividad y que
+se responsabiliza de que la ejecución de las instalaciones se efectúa de acuerdo con las normas y requisitos que se establecen en el Reglamento electrotécnico
+para baja tensión, aprobado por el Real Decreto 842/2002, de 2 de agosto, y sus respectivas instrucciones técnicas complementarias.
+Para la acreditación del cumplimiento del requisito de personal cualificado la declaración deberá hacer constar que la empresa dispone de la documentación
+que acredita la capacitación del personal afectado, de acuerdo con la normativa del país de establecimiento y conforme a lo previsto en la normativa de
+la Unión Europea sobre reconocimiento de cualificaciones profesionales, aplicada en España mediante el Real Decreto 581/2017, de 9 de junio. La autoridad
+competente podrá verificar esa capacidad con arreglo a lo dispuesto en el artículo 15 del citado real decreto.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 3, 'Las comunidades autónomas deberán posibilitar que la declaración responsable sea realizada por medios electrónicos.
+No se podrá exigir la presentación de documentación acreditativa del cumplimiento de los requisitos junto con la declaración responsable. No obstante,
+esta documentación deberá estar disponible para su presentación inmediata ante la Administración competente cuando ésta así lo requiera en el ejercicio
+de sus facultades de inspección, comprobación y control.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 4, 'El órgano competente de la comunidad autónoma, asignará, de oficio, un número de identificación a la empresa y remitirá los datos necesarios para su
+inclusión en el Registro Integrado Industrial regulado en el título IV de la Ley 21/1992, de 16 de julio, de Industria y en su normativa reglamentaria
+de desarrollo.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 5, 'De acuerdo con la Ley 21/1992, de 16 de julio, de Industria, la declaración responsable habilita por tiempo indefinido a la empresa instaladora, desde
+el momento de su presentación ante la Administración competente, para el ejercicio de la actividad en todo el territorio español, sin que puedan imponerse
+requisitos o condiciones adicionales.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 6, 'Al amparo de lo previsto en el apartado 3 del artículo 69 de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones
+Públicas, la Administración competente podrá regular un procedimiento para comprobar a posteriori lo declarado por el interesado.
+En todo caso, la no presentación de la declaración, así como la inexactitud, falsedad u omisión, de carácter esencial, de datos o manifestaciones que deban
+figurar en dicha declaración habilitará a la Administración competente para dictar resolución, que deberá ser motivada y previa audiencia del interesado,
+por la que se declare la imposibilidad de seguir ejerciendo la actividad, sin perjuicio de las responsabilidades que pudieran derivarse de las actuaciones
+realizadas, y de la aplicación del régimen sancionador previsto en la Ley 21/1992, de 16 de julio, de Industria.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 7, 'Cualquier hecho que suponga modificación de alguno de los datos incluidos en la declaración originaria, así como el cese de las actividades, deberá
+ser comunicado por el interesado al órgano competente de la comunidad autónoma donde presentó la declaración responsable en el plazo de un mes.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 8, 'Las empresas instaladoras cumplirán lo siguiente:
+a) Disponer de la documentación que identifique a la empresa instaladora, que en el caso de persona jurídica deberá estar constituida legalmente.
+B) Contar con los medios técnicos y humanos necesarios para realizar su actividad en condiciones de seguridad, que, como mínimo serán los que se determinan en el Apéndice I de esta instrucción técnica complementaria.
+C) Haber suscrito un seguro de responsabilidad civil profesional u otra garantía equivalente que cubra los daños que puedan provocar en la prestación del servicio por una cuantía mínima de 600.000 euros por siniestro para la categoría básica y de 900.000 euros por siniestro para la categoría especialista.
+Estas cuantías mínimas se actualizarán por orden de la persona titular del Ministerio de Industria, Comercio y Turismo, siempre que sea necesario para mantener la equivalencia económica de la garantía y previo informe de la Comisión Delegada del Gobierno para Asuntos Económicos.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc03', 5, 9, 'La empresa instaladora habilitada no podrá facilitar, ceder o enajenar certificados de instalación no realizadas por ella misma.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc03', 5, 10, 'El incumplimiento de los requisitos exigidos, verificado por la autoridad competente y declarado mediante resolución motivada, conllevará el cese
+de la actividad, salvo que pueda incoarse un expediente de subsanación de errores, sin perjuicio de las sanciones que pudieran derivarse de la gravedad
+de las actuaciones realizadas.
+La autoridad competente, en este caso, abrirá un expediente informativo al titular de la instalación, que tendrá quince días naturales a partir de la comunicación
+para aportar las evidencias o descargos correspondientes.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 5, 11, 'El órgano competente de la comunidad autónoma dará traslado inmediato al Ministerio de Industria, Turismo y Comercio de la inhabilitación temporal,
+las modificaciones y el cese de la actividad a los que se refieren los apartados precedentes para la actualización de los datos en el Registro Integrado
+Industrial regulado en el título IV de la Ley 21/1992, de 16 de julio, de Industria, tal y como lo establece su normativa reglamentaria de desarrollo.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03', 7, 0, 'Las Empresas Instaladoras en Baja Tensión deben, en sus respectivas categorías:
+A) Ejecutar, modificar, ampliar, mantener o reparar las instalaciones que les sean adjudicadas o confiadas, de conformidad con la normativa vigente y con la documentación de diseño de la instalación, utilizando, en su caso, materiales y equipos que sean conformes a la legislación que les sea aplicable.
+B) Efectuar las pruebas y ensayos reglamentarios que les sean atribuidos.
+C) Realizar las operaciones de revisión y mantenimiento que tengan encomendadas, en la forma y plazos previstos.
+D) Emitir los certificados de instalación o mantenimiento, en su caso.
+E) Coordinar, en su caso, con la empresa suministradora y con los usuarios las operaciones que impliquen interrupción del suministro.
+F) Notificar a la Administración competente los posibles incumplimientos reglamentarios de materiales o instalaciones, que observasen en el desempeño de su actividad. En caso de peligro manifiesto, darán cuenta inmediata de ello a los usuarios y, en su caso, a la empresa suministradora, y pondrá la circunstancia en conocimiento del Órgano competente de la Comunidad Autónoma en el plazo máximo de 24 horas.
+G) Asistir a las inspecciones establecidas por el Reglamento, o las realizadas de oficio por la Administración, si fuera requerido por el procedimiento.
+H) Mantener al día un registro de las instalaciones ejecutadas o mantenidas.
+I) Informar a la Administración competente sobre los accidentes ocurridos en las instalaciones a su cargo.
+J) Conservar a disposición de la Administración, copia de los contratos de mantenimiento al menos durante los 5 años inmediatos posteriores a la finalización de los mismos.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03a1', 1, 0, 'Contar con el personal necesario para realizar la actividad en condiciones de seguridad, en número suficiente para atender las instalaciones que tengan contratadas con un mínimo de un instalador en baja tensión de la misma categoría en la que la empresa se encuentra habilitada, contratado en plantilla a jornada completa (salvo que se acredite que el horario de apertura de la empresa es menor, en cuyo caso se admitirá que este esté contratado a tiempo parcial para prestar servicios durante un número de horas equivalente al horario durante el que la empresa desarrolle su actividad).
+Se considerará que también queda satisfecho el requisito de contar con un profesional habilitado en plantilla si se cumple alguna de las siguientes condiciones:
+1.ª En el caso de las personas jurídicas, la titularidad de la cualificación individual, la ostente uno de los socios de la organización, siempre que trabaje para la empresa a jornada completa, o durante el horario de apertura de la misma.
+2.ª En el caso de que la empresa instaladora sea una persona física dada de alta en el régimen especial de trabajadores autónomos, si esta dispone de la habilitación como instalador en baja tensión.
+La figura del instalador podrá ser sustituida por la de dos o más instaladores de la misma o mismas categorías, cuyos horarios laborales permitan cubrir la jornada completa o el horario de actividad de la empresa.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc03a1', 2, 1, 'equipos técnicos:
+ Telurómetro, Medidor de aislamiento según ITC-BT 19, Multímetro o tenaza para las siguientes magnitudes: Tensión alterna y continua hasta 500 V, Intensidad alterna y continua hasta 20 A, resistencia; Medidor de corrientes de fuga con resolución mejor o igual que 1 mA, Detector de tensión, Analizador registrador de potencia y energía para corriente alterna trifásica, con capacidad de medida de las siguientes magnitudes: potencia activa, tensión alterna, intensidad alterna, factor de potencia; Equipo verificador de la sensibilidad de disparo de los interruptores diferenciales capaz de verificar la característica intensidad-tiempo; Equipo verificador de la continuidad de conductores, Medidor de impedancia de bucle con sistema de medición independiente o con compensación del valor de la resistencia de los cables de prueba y con una resolución mejor o igual que 0,1 Ω, Herramientas comunes y equipo auxiliar, Luxómetro con rango de medida adecuado para el alumbrado de emergencia.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03a1', 2, 2, 'Además de los medios anteriores, deberán contar con los siguientes, según proceda:
+ Analizador de redes, de armónicos y de perturbaciones de red, electrodos para la medida del aislamiento de los suelos, aparato comprobador del dispositivo de vigilancia del nivel de aislamiento de los quirófanos.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc03a1', 2, 3, 'Estarán de acuerdo con la normativa vigente y las necesidades de la instalación.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc04', 1, 0, 'La presente Instrucción tiene por objeto desarrollar las prescripciones del artículo 18 del Reglamento Electrotécnico para Baja Tensión, determinando la
+documentación técnica que deben tener las instalaciones para ser legalmente puestas en servicio, así como su tramitación ante el Órgano competente de la
+Administración');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 2, 0, 'Las instalaciones en el ámbito de aplicación del presente Reglamento deben ejecutarse sobre la base de una documentación técnica que, en función de su
+importancia, deberá adoptar una de las siguientes modalidades.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 2, 1, 'Cuando se precise proyecto, de acuerdo con lo establecido en el apartado 3, éste deberá ser redactado y firmado por técnico titulado competente, quien
+será directamente responsable de que el mismo se adapte a las disposiciones reglamentarias. El proyecto de instalación se desarrollará, bien como parte
+del proyecto general del edificio, bien en forma de uno o varios proyectos específicos.
+En la memoria del proyecto se expresarán especialmente:
+– Datos relativos al propietario;
+– Emplazamiento, características básicas y uso al que se destina;
+– Características y secciones de los conductores a emplear;
+– Características y diámetros de los tubos para canalizaciones;
+– Relación nominal de los receptores que se prevean instalar y su potencia, sistemas y dispositivos de seguridad adoptados y cuantos detalles sean necesarios
+de acuerdo con la importancia de la instalación proyectada y para que se ponga de manifiesto el cumplimiento de las prescripciones del Reglamento y sus
+Instrucciones Técnicas Complementarias.
+– Esquema unifilar de la instalación y características de los dispositivos de corte y protección adoptados, puntos de utilización y secciones de los conductores.
+– Croquis de su trazado;
+– Cálculos justificativos del diseño.
+Los planos serán los suficientes en número y detalle, tanto para dar una idea clara de las disposiciones que pretenden adoptarse en las instalaciones,
+como para que la Empresa instaladora que ejecute la instalación disponga de todos los datos necesarios para la realización de la misma.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 2, 2, 'La Memoria Técnica de Diseño (MTD) se redactará sobre impresos, según modelo determinado por el Órgano competente de la Comunidad Autónoma, con objeto
+de proporcionar los principales datos y características de diseño de las instalaciones. La empresa instaladora para la categoría de la instalación correspondiente
+o el técnico titulado competente que firme dicha Memoria será directamente responsable de que la misma se adapte a las exigencias reglamentarias.
+En especial, se incluirán los siguientes datos:
+– Los referentes al propietario;
+– Identificación de la persona que firma la memoria y justificación de su competencia;
+– Emplazamiento de la instalación;
+– Uso al que se destina;
+– Relación nominal de los receptores que se prevea instalar y su potencia;
+– Cálculos justificativos de las características de la línea general de alimentación, derivaciones individuales y líneas secundarias, sus elementos de
+protección y sus puntos de utilización;
+– Pequeña memoria descriptiva;
+– Esquema unifilar de la instalación y características de los dispositivos de corte y protección adoptados, puntos de utilización y secciones de los conductores.
+– Croquis de su trazado.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 3, 3, 'Si una instalación está comprendida en más de un grupo de los especificados en 3.1, se le aplicará el criterio más exigente de los establecidos para
+dichos grupos.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 4, 0, 'Requerirán Memoria Técnica de Diseño todas las instalaciones sean nuevas, ampliaciones o modificaciones no incluidas en los grupos indicados en el apartado
+3.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 5, 1, 'Todas las instalaciones en el ámbito de aplicación del Reglamento deben ser efectuadas por las empresas instaladoras en baja tensión a las que se refiere
+la Instrucción Técnica complementaria ITC-BT-03.
+En el caso de instalaciones que requirieron Proyecto, su ejecución deberá contar con la dirección de un técnico titulado competente.
+Si, en el curso de la ejecución de la instalación, la empresa instaladora considerase que el Proyecto o Memoria Técnica de Diseño no se ajusta a lo establecido
+en el Reglamento, deberá, por escrito, poner tal circunstancia en conocimiento del autor de dichos Proyecto o Memoria, y del propietario. Si no hubiera
+acuerdo entre las partes se someterá la cuestión al Órgano competente de la Comunidad Autónoma, para que ésta resuelva en el más breve plazo posible.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 5, 2, 'Al término de la ejecución de la instalación, la empresa instaladora realizará las verificaciones que resulten oportunas, en función de las características
+de aquélla, según se especifica en la ITC-BT-05 y en su caso todas las que determine la dirección de obra.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc04', 5, 3, 'Asimismo, las instalaciones que se especifican en la ITC-BT-05, deberán ser objeto de la correspondiente Inspección Inicial por Organismo de Control');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 5, 4, 'Finalizadas las obras y realizadas las verificaciones e inspección inicial a que se refieren los puntos anteriores, la empresa instaladora deberá emitir
+un Certificado de Instalación, suscrito por un instalador en baja tensión que pertenezca a la empresa, según modelo establecido por la Administración,
+que deberá comprender, al menos, lo siguiente:
+a) los datos referentes a las principales características de la instalación;
+b) la potencia prevista de la instalación;
+c) en su caso, la referencia del certificado del Organismo de Control que hubiera realizado con calificación de resultado favorable, la inspección inicial;
+d) identificación de la empresa instaladora responsable de la instalación y del instalador en baja tensión que suscribe el certificado de instalación;
+e) declaración expresa de que la instalación ha sido ejecutada de acuerdo con las prescripciones del Reglamento electrotécnico para baja tensión, aprobado
+por el Real Decreto 842/2002, de 2 de agosto, y, en su caso, con las especificaciones particulares aprobadas a la Compañía eléctrica, así como, según corresponda,
+con el Proyecto o la Memoria Técnica de Diseño.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 5, 5, 'Antes de la puesta en servicio de las instalaciones, la empresa instaladora deberá presentar ante el Órgano competente de la Comunidad Autónoma, al
+objeto de su inscripción en el correspondiente registro, el Certificado de Instalación con su correspondiente anexo de información al usuario, por quintuplicado,
+al que se acompañará, según el caso, el Proyecto o la Memoria Técnica de Diseño, así como el certificado de Dirección de Obra firmado por el correspondiente
+técnico titulado competente, y el certificado de inspección inicial del Organismo de Control, si procede.
+El Órgano competente de la Comunidad Autónoma deberá diligenciar las copias del Certificado de Instalación, devolviendo cuatro a la empresa instaladora,
+dos para sí y las otras dos para la propiedad, a fin de que esta pueda, a su vez, quedarse con una copia y entregar la otra a la Compañía eléctrica, requisito
+sin el cual esta no podrá suministrar energía a la instalación, salvo lo indicado en el Artículo 18.3 del Reglamento Electrotécnico para Baja Tensión.
+Si la documentación técnica indicada se presentase por medios electrónicos, solo será necesaria la presentación de una única copia del certificado de instalación
+eléctrica en lugar de cinco. En este caso, la administración enviará dicho certificado diligenciado por medios electrónicos a la empresa instaladora, quien
+deberá entregar una copia (también electrónica) del documento al titular de la instalación y conservar otra para su archivo.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc04', 5, 6, 'Instalaciones temporales en ferias, exposiciones y similares.
+Cuando en este tipo de eventos exista para toda la instalación de la feria o exposición una Dirección de Obra común, podrán agruparse todas las documentaciones
+de las instalaciones parciales de alimentación a los distintos stands o elementos de la feria, exposición, etc., y presentarse de una sola ve ntación de
+diseño, tras el registro de la primera instalación, haciendo constar en el certificado de instalación dicha circunstancia, que será válida durante un año,
+siempre que no se produjeran modificaciones significativas, entendiendo como tales las que afecten a la potencia prevista, tensiones de servicio y utilización
+y a los elementos de protección contra contactos directos e indirectos y contra sobreintensidades y sobretensiones.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc04', 6, 0,'El titular de la instalación deberá solicitar el suministro de energía a la Empresas suministradora mediante entrega del correspondiente ejemplar del certificado
+de instalación.
+La Empresa suministradora podrá realizar, a su cargo, las verificaciones que considere oportunas, en lo que se refiere al cumplimiento de las prescripciones
+del presente Reglamento.
+Cuando los valores obtenidos en la indicada verificación sean inferiores o superiores a los señalados respectivamente para el aislamiento y corrientes
+de fuga en la ITC-BT-19, las Empresas suministradoras no podrán conectar a sus redes las instalaciones receptoras.
+En esos casos, deberán extender un Acta, en la que conste el resultado de las comprobaciones, la cual deberá ser firmada igualmente por el titular de la
+instalación, dándose por enterado. Dicha acta, en el plazo más breve posible, se pondrá en conocimiento del Órgano competente de la Comunidad Autónoma,
+quien determinará lo que proceda.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 1, 0, 'La presente Instrucción tiene por objeto desarrollar las previsiones de los artículos 18 y 20 del Reglamento Electrotécnico para Baja Tensión, en relación
+con las verificaciones previas a la puesta en servicio e inspecciones de las instalaciones eléctricas incluidas en su campo de aplicación');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 2, 1, 'Las verificaciones previas a la puesta en servicio de las instalaciones deberán ser realizadas por las empresas instaladoras que las ejecuten.');
+insert into llx_dolielec_rebt (id, idap, idsubap, ctx) values('itc05', 2, 2, 'De acuerdo con lo indicado en el artículo 20 del Reglamento, sin perjuicio de las atribuciones que, en cualquier caso, ostenta la Administración Pública,
+los agentes que lleven a cabo las inspecciones de las instalaciones eléctricas de Baja Tensión deberán tener la condición de Organismos de Control, según
+lo establecido en el Real Decreto 2.200/1995, de 28 de diciembre, acreditados para este campo reglamentario.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 3, 0, 'Las instalaciones eléctricas en baja tensión deberán ser verificadas, previamente a su puesta en servicio y según corresponda en función de sus características,
+siguiendo la metodología de la norma UNE 20.460 -6-61.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 4, 0, 'Las instalaciones eléctricas en baja tensión de especial relevancia que se citan a continuación, deberán ser objeto de inspección por un Organismo de Control,
+a fin de asegurar, en la medida de lo posible, el cumplimiento reglamentario a lo largo de la vida de dichas instalaciones.
+Las inspecciones podrán ser:
+– Iniciales: Antes de la puesta en servicio de las instalaciones.
+– Periódicas.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 4, 2, 'Serán objeto de inspecciones periódicas, cada 5 años, todas las instalaciones eléctricas en baja tensión que precisaron inspección inicial, según el punto
+4.1 anterior, y cada 10 años, las comunes de edificios de viviendas de potencia total instalada superior a 100 kW.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 5, 1, 'Los Organismos de Control realizarán la inspección de las instalaciones sobre la base de las prescripciones que establezca el Reglamento de aplicación
+y, en su caso, de lo especificado en la documentación técnica, aplicando los criterios para la clasificación de defectos que se relacionan en el apartado
+siguiente. La empresa instaladora, si lo estima conveniente, podrá asistir a la realización de estas inspecciones.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 5, 2, 'Como resultado de la inspección, el Organismo de Control emitirá un Certificado de Inspección, en el cual figurarán los datos de identificación de la instalación y la posible relación de defectos, con su clasificación, y la calificación de la instalación, que podrá ser:Favorable: Cuando no se determine la existencia de ningún defecto muy grave o grave. En este caso, los posibles defectos leves se anotarán para constancia
+del titular, con la indicación de que deberá poner los medios para subsanarlos antes de la próxima inspección; Asimismo, podrán servir de base a efectos estadísticos y de control del buen hacer de las empresas instaladoras.
+Condicionada: Cuando se detecte la existencia de, al menos, un defecto grave o defecto leve procedente de otra inspección anterior que no se haya
+corregido. En este caso:
+a) Las instalaciones nuevas que sean objeto de esta calificación no podrán ser suministradas de energía eléctrica en tanto no se hayan corregido los defectos
+indicados y puedan obtener la calificación de favorable.
+b) A las instalaciones ya en servicio se les fijará un plazo para proceder a su corrección, que no podrá superar los 6 meses. Transcurrido dicho plazo
+sin haberse subsanado los defectos, el Organismo de Control deberá remitir el Certificado con la calificación negativa al Órgano competente de la Comunidad
+Autónoma.
+Negativa: Cuando se observe, al menos, un defecto muy grave. En este caso:
+a) Las nuevas instalaciones no podrán entrar en servicio, en tanto no se hayan corregido los defectos indicados y puedan obtener la calificación de favorable.
+b) A las instalaciones ya en servicio se les emitirá Certificado negativo, que se remitirá inmediatamente al Órgano competente de la Comunidad Autónoma.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 6, 0, 'Los defectos en las instalaciones se clasificarán en: Defectos muy graves, defectos graves y defectos leves');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 6, 1, 'Es todo aquél que la razón o la experiencia determina que constituye un peligro inmediato para la seguridad de las personas o los bienes.
+Se consideran tales los incumplimientos de las medidas de seguridad que pueden provocar el desencadenamiento de los peligros que se pretenden evitar con
+tales medidas, en relación con:
+– Contactos directos, en cualquier tipo de instalación;
+– Locales de pública concurrencia;
+– Locales con riesgo de incendio o explosión;
+– Locales de características especiales;
+– Instalaciones con fines especiales;
+– Quirófanos y salas de intervención.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 6, 2, 'Es el que no supone un peligro inmediato para la seguridad de las personas o de los bienes, pero puede serlo al originarse un fallo en la instalación.
+También se incluye dentro de esta clasificación, el defecto que pueda reducir de modo sustancial la capacidad de utilización de la instalación eléctrica.
+Dentro de este grupo y con carácter no exhaustivo, se consideran los siguientes defectos graves:
+– Falta de conexiones equipotenciales, cuando éstas fueran requeridas;
+– Inexistencia de medidas adecuadas de seguridad contra contactos indirectos;
+– Falta de aislamiento de la instalación;
+– Falta de protección adecuada contra cortocircuitos y sobrecargas en los conductores, en función de la intensidad máxima admisible en los mismos, de acuerdo
+con sus características y condiciones de instalación;
+– Falta de continuidad de los conductores de protección;
+– Valores elevados de resistencia de tierra en relación con las medidas de seguridad adoptadas.
+– Defectos en la conexión de los conductores de protección a las masas, cuando estas conexiones fueran preceptivas;
+– Sección insuficiente de los conductores de protección;
+– Existencia de partes o puntos de la instalación cuya defectuosa ejecución pudiera ser origen de averías o daños;
+– Naturaleza o características no adecuadas de los conductores utilizados;
+– Falta de sección de los conductores, en relación con las caídas de tensión admisibles para las cargas previstas;
+– Falta de identificación de los conductores "neutro" y "de protección";
+– Empleo de materiales, aparatos o receptores que no se ajusten a las especificaciones vigentes.
+– Ampliaciones o modificaciones de una instalación que no se hubieran tramitado según lo establecido en la ITC -BT 04.
+– Carencia del número de circuitos mínimos estipulados
+– La sucesiva reiteración o acumulación de defectos leves.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc05', 6, 3, 'Es todo aquel que no supone peligro para las personas o los bienes, no perturba el funcionamiento de la instalación y en el que la desviación respecto
+de lo reglamentado no tiene valor significativo para el uso efectivo o el funcionamiento de la instalación.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 1, 1, 'Los conductores utilizados en las redes aéreas serán de cobre, aluminio o de otros materiales o aleaciones que posean características eléctricas y mecánicas
+adecuadas y serán preferentemente aislados
+
+
+- conductores aislados:
+
+Los conductores aislados serán de tensión asignada no inferior a 0,6/1 kV tendrán un recubrimiento tal que garantice una buena resistencia a las acciones
+de la intemperie y deberán satisfacer las exigencias especificadas en la norma UNE 21.030.
+La sección mínima permitida en los conductores de aluminio será de 16 mm2, y en los de cobre de 10 mm2. La sección mínima correspondiente a otros materiales
+será la que garantice una resistencia mecánica y conductividad eléctrica no inferiores a las que corresponden a los de cobre anteriormente indicados.
+
+- conductores desnudos:
+
+Los conductores desnudos serán resistentes a las acciones de la intemperie y su carga de rotura mínima a la tracción será de 410 daN debiendo satisfacer
+las exigencias especificadas en las normas UNE 21.012 o UNE 21.018 según que los conductores sean de Cobre o de Aluminio.
+Se considerarán como conductores desnudos aquellos conductores aislados para una tensión nominal inferior a 0,6/1 kV.
+Su utilización tendrá carácter especial debidamente justificado, excluyendo el caso de zonas de arbolado o con peligro de incendio.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 1, 2, 'Los aisladores serán de porcelana, vidrio o de otros materiales aislantes equivalentes que resistan las acciones de la intemperie, especialmente las variaciones
+de temperatura y la corrosión, debiendo ofrecer la misma resistencia a los esfuerzos mecánicos y poseer el nivel de aislamiento de los aisladores de porcelana
+o vidrio.
+La fijación de los aisladores a sus soportes se efectuará mediante roscado o cementación a base de sustancias que no ataquen ninguna de las partes, y que
+no sufran variaciones de volumen que puedan afectar a los propios aisladores o a la seguridad de su fijación.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 1, 3, 'Los accesorios que se empleen en las redes aéreas deberán estar debidamente protegidos contra la corrosión y envejecimiento, y resistirán los esfuerzos.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 1, 4, 'Los apoyos podrán ser metálicos, de hormigón, madera o de cualquier otro material que cuente con la debida autorización de la Autoridad competente, y se
+dimensionarán de acuerdo con las hipótesis de cálculo indicadas en el apartado 2.3 de la presente instrucción. Deberán presentar una resistencia elevada
+a las acciones de la intemperie, y en el caso de no presentarla por si mismos deberán recibir los tratamientos adecuados para tal fin.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 1, 5, 'Los tirantes estarán constituidos por varillas o cables metálicos, debidamente protegidos contra la corrosión, y tendrán una carga de rotura mínima de
+1.400 daN
+Los tornapuntas, podrán ser metálicos, de hormigón, madera o cualquier otro material capaz de soportar los esfuerzos a que estén sometidos, debiendo estar
+debidamente protegidos contra las acciones de la intemperie.
+Deberá restringirse el empleo de tirantes y tornapuntas.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 2, 1, 'El cálculo mecánico de los elementos constituyentes de la red, cualquiera que sea su naturaleza, se efectuará con los supuestos de acción de las cargas
+y sobrecargas que a continuación se indican, combinadas en la forma y condiciones que se fijan en los apartados siguientes:
+Como cargas permanentes se considerarán las cargas verticales debidas al propio peso de los distintos elementos: conductores, aisladores, accesorios de
+sujeción y apoyos.
+Se considerarán las sobrecargas debidas a la presión del viento siguientes:
+– Sobre conductores: 50 daN/m2
+– Sobre superficies planas: 100 daN/m2
+– Sobre superficies cilíndricas de apoyos: 70 daN/m2
+La acción del viento sobre los conductores no se tendrá en cuenta en aquellos lugares en que por la configuración del terreno, o la disposición de las
+edificaciones, actúe en el sentido longitudinal de la línea.
+A los efectos de las sobrecargas motivadas por el hielo se clasificará el país en tres zonas:
+– Zona A: La situada a menos de 500 m de altitud sobre el nivel del mar. No se tendrá en cuenta sobrecarga alguna motivada por el hielo.
+– Zona B: La situada a una altitud comprendida entre 500 y 1000 m. Los conductores desnudos se considerarán sometidos a la sobrecarga de un manguito de
+hielo de valor 180√d gramos por metro lineal, siendo d el diámetro del conductor en mm. En los cables en haz la sobrecarga se considerará de 60 √d gramos
+por metro lineal, siendo d el diámetro del cable en haz en mm. A efectos de cálculo se considera como diámetro de un cable en haz, 2,5 veces el diámetro
+del conductor de fase.
+– Zona C: La situada a una altitud superior a 1000 m. Los conductores desnudos se considerarán sometidos a la sobrecarga de un manguito de hielo de valor
+360√d gramos por metro lineal, siendo d el diámetro del conductor en mm. En los cables en haz la sobrecarga se considerará de 120 √d gramos por metro lineal,
+siendo del diámetro del cable en haz en mm. A efectos de cálculo se considera como diámetro de un cable en haz, 2,5 veces el diámetro del conductor de
+fase.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 2, 2, 'tracción máxima admisible:
+
+La tracción máxima admisible de los conductores no será superior a su carga de rotura dividida por 2,5 considerándolos sometidos a la hipótesis más desfavorable
+de las siguientes:
+Zona A:
+a) Sometidos a la acción de su propio peso y a la sobrecarga del viento, a la temperatura de 15 ºC.
+b) Sometidos a la acción de su propio peso y a la sobrecarga del viento dividida por 3, a la temperatura de 0 ºC
+Zona B y C:
+a) Sometidos a la acción de su propio peso y a la sobrecarga del viento, a la temperatura de 15 ºC.
+b) Sometidos a la acción de su propio peso y a la sobrecarga de hielo correspondiente a la zona, a la temperatura de 0 ºC.
+- Flecha máxima:
+
+Se adoptará como flecha máxima de los conductores el mayor valor resultante de la comparación entre las dos hipótesis correspondientes a la zona climatológica
+que se considere, y a una tercera hipótesis de temperatura (válida para las tres zonas), consistente en considerar los conductores sometidos a la acción
+de su propio peso y a la temperatura máxima previsible, teniendo en cuenta las condiciones climatológicas y las de servicio de la red. Esta temperatura
+no será inferior a 50 ºC.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 2, 3, 'Para el cálculo mecánico de los apoyos se tendrán en cuenta las hipótesis indicadas en la Tabla 1, según la función del apoyo y de la zona.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 3, 1, 'Los conductores dotados de envolventes aislantes, cuya tensión nominal sea inferior a 0,6/1 kV se considerarán, a efectos de su instalación, como conductores
+desnudos. (Apartado 3.2).
+Los conductores aislados de tensión nominal 0,6/1 kV. (UNE 21.030) podrán instalarse como:
+3.1.1 Cables posados
+Directamente posados sobre fachadas o muros, mediante abrazaderas fijadas a los mismos y resistentes a las acciones de la intemperie. Los conductores se
+protegerán adecuadamente en aquellos lugares en que puedan sufrir deterioro mecánico de cualquier índole.
+En los espacios vacíos (cables no posados en fachada o muro) los conductores tendrán la condición de tensados y se regirán por lo indicado en el apartado
+3.1.2.
+En general deberá respetarse una altura mínima al suelo de 2,5 metros. Lógicamente, si se produce una circunstancia particular como la señalada en el párrafo
+anterior, la altura mínima deberá ser la señalada en los puntos 3.1.2 y 3.9 para cada caso en particular. En los recorridos por debajo de ésta altura mínima
+al suelo (por ejemplo, para acometidas) deberán protegerse mediante elementos adecuados, conforme a lo indicado en el apartado 1.2.1 de la ITC -BT 11,
+evitándose que los conductores pasen por delante de cualquier abertura existente en las fachadas o muros.
+En las proximidades de aberturas en fachadas deben respetarse las siguientes distancias mínimas:
+– Ventanas: 0,30 metros al borde superior de la abertura y 0,50 metros al borde inferior y bordes laterales de la abertura.
+– Balcones: 0,30 metros al borde superior de la abertura y 1,00 metros a los bordes laterales del balcón.
+Se tendrán en cuenta la existencia de salientes o marquesinas que puedan facilitar el posado de los conductores, pudiendo admitir, en éstos casos, una
+disminución de las distancias antes indicadas.
+Así mismo se respetará una distancia mínima de 0,05 metros a los elementos metálicos presentes en las fachadas, tales como escaleras, a no ser que el cable
+disponga de una protección conforme a lo indicado en el apartado 1.2.1 de la ITC -BT 11,
+3.1.2 Cables tensados
+Los cables con neutro fiador, podrán ir tensados entre piezas especiales colocadas sobre apoyos, fachadas o muros, con una tensión mecánica adecuada, sin
+considerar a éstos efectos el aislamiento como elemento resistente. Para el resto de los cables tensados se utilizarán cables fiadores de acero galvanizado,
+cuya resistencia a la rotura será, como mínimo, de 800 daN, y a los que se fijarán mediante abrazaderas u otros dispositivos apropiados los conductores
+aislados.
+Distancia al suelo: 4 m, salvo lo especificado en el apartado 3.9 para cruzamientos.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 3, 2, 'Los conductores desnudos irán fijados a los aisladores de forma que quede asegurada su posición correcta en el aislador y no ocasione un debilitamiento
+apreciable de la resistencia mecánica del mismo, ni produzcan efectos de corrosión.
+La fijación de los conductores al aislador debe hacerse preferentemente, en la garganta lateral del mismo, por la parte próxima al apoyo, y en el caso
+de ángulos, de manera que el esfuerzo mecánico del conductor esté dirigido hacia el aislador.
+Cuando se establezcan derivaciones, y salvo que se utilicen aisladores especialmente concebidos para ellas, deberá colocarse un sólo conductor por aislador.
+Cuando se trate de redes establecidas por encima de edificaciones o sobre apoyos fijados a las fachadas, el coeficiente de seguridad de la tracción máxima
+admisible de los conductores deberá ser superior, en un 25 por ciento, a los valores indicados en el apartado 2.2.1.
+3.2.1 Distancia de los conductores desnudos al suelo y zonas de protección de las edificaciones
+Los conductores desnudos mantendrán, en las condiciones más desfavorables, las siguientes distancias respecto al suelo y a las edificaciones:
+3.2.1.1 Al suelo
+4 m, salvo lo especificado en el apartado 3.9 para cruzamientos.
+3.2.1.2 En edificios no destinados al servicio de distribución de la energía
+Los conductores se instalarán fuera de una zona de protección, limitada por los planos que se señalan:
+– Sobre los tejados: Un plano paralelo al tejado, con una distancia vertical de 1,80 m del mismo, cuando se trate de conductores no puestos a tierra, y
+de 1,50 m cuando lo estén; así mismo para cualquier elemento que se encontrase instalado, o que se instale en el tejado, se respetarán las mismas distancias
+que las indicadas en la figura 1 para las chimeneas.
+Cuando la inclinación del tejado sea superior a 45 grados sexagesimales, el plano limitante de la zona de protección deberá considerarse a 1 metro de separación
+entre ambos.
+– Sobre terrazas y balcones: Un plano paralelo al suelo de la terraza o balcón, y a una distancia del mismo de 3 metros.
+– En fachadas: La zona de protección queda limitada:
+a) Por un plano vertical paralelo al muro de fachada sin aberturas, situado a 0,20 metros del mismo.
+b) Por un plano vertical paralelo al muro de fachada a una distancia de 1 metro de las ventanas, balcones, terrazas o cualquier otra abertura. Este plano
+vendrá, a su vez, limitado por los planos siguientes:
+– Un plano horizontal situado a una distancia vertical de 0,30 metros de la parte superior de la abertura de que se trate.
+– Dos planos verticales, uno a cada lado de la abertura, perpendicular a la fachada, y situados a 1 metro de distancia horizontal de los extremos de la
+abertura.
+– Un plano horizontal situado a 3 metros por debajo de los antepechos de las aberturas.
+Los límites de esta zona de protección se representan en la figura 1.
+3.2.2 Separación mínima entre conductores desnudos y entre éstos y los muros o paredes de edificaciones
+Las distancias (D) entre conductores desnudos de polaridades diferentes serán, como mínimo las siguientes:
+– En vanos hasta 4 metros: 0,10 m
+– En vanos de 4 a 6 metros: 0,15 m
+– En vanos de 6 a 30 metros: 0,20 m
+– En vanos de 30 a 50 metros: 0,30 m
+Para vanos mayores de 50 m se aplicará la fórmula D=0,55√F, en la que F es la flecha máxima en metros.
+En los apoyos en los que se establezcan derivaciones, la distancia entre cada uno de los conductores derivados y los conductores de polaridad diferente
+de la línea de donde aquellos se deriven podrá disminuirse hasta un 50 por ciento de los valores indicados anteriormente, con un mínimo de 0,10 metros.
+Los conductores colocados sobre apoyos sujetos a fachadas de edificios estarán distanciados de éstas 0,20 metros como mínimo. Esta separación deberá aumentarse
+en función de los vanos, de forma que nunca pueda sobrepasarse la zona de protección señalada en el capítulo anterior, ni en el caso de los más fuertes
+vientos.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 3, 3, 'Los empalmes y conexiones de conductores se realizarán utilizando piezas metálicas apropiadas, resistentes a la corrosión, y que aseguren un contacto eléctrico
+eficaz, de modo que en ellos, la elevación de temperatura no sea superior a la de los conductores.
+Los empalmes deberán soportar sin rotura ni deslizamiento del conductor, el 90 por ciento de su carga de rotura. No es admisible realizar empalmes por
+soldadura o por torsión directa de los conductores.
+En los empalmes y conexiones de conductores aislados, o de éstos con conductores desnudos, se utilizarán accesorios adecuados, resistentes a la acción
+de la intemperie y se colocarán de tal forma que eviten la penetración de la humedad en los conductores aislados.
+Las derivaciones se conectarán en las proximidades de los soportes de línea, y no originarán tracción mecánica sobre la misma.
+Con conductores de distinta naturaleza, se tomarán todas las precauciones necesarias para obviar los inconvenientes que se derivan de sus características
+especiales, evitando la corrosión electrolítica mediante piezas adecuadas.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 3, 4, 'Dependiendo del número de conductores con que se haga la distribución la sección mínima del conductor neutro será:
+a) Con dos o tres conductores: igual a la de los conductores de fase.
+b) Con cuatro conductores: la sección de neutro será como mínimo, la de la tabla 1 de la ITC-BT-07, con un mínimo de 10 mm2 para cobre y de 16 mm2 para
+aluminio.
+En caso de utilizar conductor neutro de aleaciones de aluminio (por ejemplo ALMELEC), la sección a considerar será la equivalente, teniendo en cuenta las
+conductividades de los diferentes materiales.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 3, 5, 'El conductor neutro deberá estar identificado por un sistema adecuado. En las líneas de conductores desnudos se admite que no lleve identificación alguna
+cuando éste conductor tenga distinta sección o cuando esté claramente diferenciado por su posición.');
+insert into llx_dolielec_rebt('id, idap, idsubap, ctx) values('itc06', 3, 6, 'El conductor neutro no podrá ser interrumpido en las redes de distribución, salvo que ésta interrupción sea realizada con alguno de los dispositivos siguientes:
+a) Interruptores o seccionadores omnipolares que actúen sobre el neutro y las fases al mismo tiempo (corte omnipolar simultáneo), o que conecten el neutro
+antes que las fases y desconecten éstas antes que el neutro.
+b) Uniones amovibles en el neutro próximas a los interruptores o seccionadores de los conductores de fase, debidamente señalizadas, y que sólo puedan ser
+maniobradas mediante herramientas adecuadas, no debiendo, en éste caso, ser seccionado el neutro sin que lo estén previamente las fases, ni conectadas
+éstas sin haberlo sido previamente el neutro.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 3, 7, 'El conductor neutro de las líneas aéreas de redes de distribución de las compañías eléctricas se conectará a tierra en el centro de transformación o central
+generadora de alimentación, en la forma prevista en el Reglamento sobre Condiciones Técnicas y Garantías de Seguridad en Centrales Eléctricas, Subestaciones
+y Centros de Transformación. Además, en los esquemas de distribución tipo TT y TN, el conductor neutro y el de protección para el esquema TN-S, deberán
+estar puestos a tierra en otros puntos, y como mínimo una vez cada 500 metros de longitud de línea. Para efectuar ésta puesta a tierra se elegirán, con
+preferencia, los puntos de donde partan las derivaciones importantes.
+Cuando, en los mencionados esquemas de distribución tipo, la puesta a tierra del neutro se efectúe en un apoyo de madera, los soportes metálicos de los
+aisladores correspondientes a los conductores de fase en éste apoyo estarán unidos al conductor neutro.
+En las redes de distribución privadas, con origen en centrales de generación propia para las que se prevea la puesta a tierra del neutro, se seguirá lo
+especificado anteriormente para las redes de distribución de las compañías eléctricas.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 3, 8, 'Los apoyos estarán consolidados por fundaciones adecuadas o bien directamente empotrados en el terreno, asegurando su estabilidad frente a las solicitaciones
+actuantes y a la naturaleza del suelo. En su instalación deberá observarse:
+1) Los postes de hormigón se colocarán en cimentaciones monolíticas de hormigón.
+2) Los apoyos metálicos serán cimentados en macizos de hormigón o mediante otros procedimientos avalados por la técnica (pernos, etc.). La cimentación
+deberá construirse de forma tal que facilite el deslizamiento del agua, y cubra, cuando existan, las cabezas de los pernos.
+3) Los postes de madera se colocarán directamente retacados en el suelo, y no se empotrarán en macizos de hormigón. Se podrán fijar a bases metálicas o
+de hormigón por medio de elementos de unión apropiados que permitan su fácil sustitución, quedando el poste separado del suelo 0,15 m, como mínimo.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 3, 9, 'Las líneas deberán presentar, en lo que se refiere a los vanos de cruce con las vías e instalaciones que se señalan, las condiciones que para cada caso
+se indican.
+3.9.1.1 Con líneas eléctricas aéreas de alta tensión.
+De acuerdo con lo dispuesto en el Reglamento de Líneas Eléctricas Aéreas de Alta Tensión, la línea de baja tensión deberá cruzar por debajo de la línea
+de alta tensión.
+La mínima distancia vertical "d" entre los conductores de ambas líneas, en las condiciones más desfavorables, no deberá ser inferior, en metros, a:
+Fórmula
+donde:
+U = Tensión nominal, en kV, de la línea de alta tensión.
+L1 = Longitud, en metros, entre el punto de cruce y el apoyo más próximo de la línea de alta tensión.
+L2 = Longitud, en metros, entre el punto de cruce y el apoyo más próximo de la línea de baja tensión.
+Cuando la resultante de los esfuerzos del conductor en alguno de los apoyos de cruce de baja tensión tenga componente vertical ascendente se tomarán las
+debidas precauciones para que no se desprendan los conductores, aisladores o accesorios de sujeción.
+Podrán realizarse cruces sin que la línea de alta tensión reúna ninguna condición especial cuando la línea de baja tensión esté protegida en el cruce por
+un haz de cables de acero, situado entre los conductores de ambas líneas, con la suficiente resistencia mecánica para soportar la caída de los conductores
+de la línea de alta tensión, en el caso de que éstos se rompieran o desprendieran. Los cables de protección serán de acero galvanizado, y estarán puestos
+a tierra.
+En caso de que por circunstancias singulares sea necesario que la línea de baja tensión cruce por encima de la de alta tensión será preciso recabar autorización
+expresa del Organismo competente de la Administración, debiendo tener presentes, para realizar estos cruzamientos, todas las precauciones y criterios expuestos
+en el citado Reglamento de Líneas Eléctricas Aéreas de Alta Tensión.
+3.9.1.2 Con otras líneas eléctricas aéreas de baja tensión.
+Cuando alguna de las líneas sea de conductores desnudos, establecidas en apoyos diferentes, la distancia entre los conductores más próximos de las dos
+líneas será superior a 0,50 metros, y si el cruzamiento se realiza en apoyo común esta distancia será la señalada en el punto 3.2.2 para los apoyos de
+derivación. Cuando las dos líneas sean aisladas podrán estar en contacto.
+3.9.1.3 Con líneas aéreas de telecomunicación.
+Las líneas de baja tensión, con conductores desnudos, deberán cruzar por encima de las de telecomunicación. Excepcionalmente podrán cruzar por debajo,
+debiendo adoptarse en este caso una de las soluciones siguientes:
+– Colocación entre las líneas de un dispositivo de protección formado por un haz de cables de acero, situado entre los conductores de ambas líneas, con
+la suficiente resistencia mecánica para soportar la caída de los conductores de la línea de telecomunicación en el caso de que se rompieran o desprendieran.
+Los cables de protección serán de acero galvanizado, y estarán puestos a tierra.
+– Empleo de conductores aislados para 0,6/1 kV en el vano de cruce para líneas de baja tensión.
+– Empleo de conductores aislados para 0,6/1 kV en el vano de cruce para la línea de telecomunicación.
+Cuando el cruce se efectúe en distintos apoyos, la distancia mínima entre los conductores desnudos de las líneas de baja tensión y los de las líneas de
+telecomunicación, será de 1 metro. Si el cruce se efectúa sobre apoyos comunes dicha distancia podrá reducirse a 0,50 metros.
+3.9.1.4 Con carretera y ferrocarriles sin electrificar.
+Los conductores tendrán una carga de rotura no inferior a 410 daN, admitiéndose en el caso de acometidas con conductores aislados que se reduzca dicho
+valor hasta 280 daN.
+La altura mínima del conductor más bajo, en las condiciones de flecha más desfavorables, será de 6 metros.
+Los conductores no presentarán ningún empalme en el vano de cruce, admitiéndose, durante la explotación, y por causa de reparación de la avería, la existencia
+de un empalme por vano.
+3.9.1.5 Con ferrocarriles electrificados, tranvías y trolebuses
+La altura mínima de los conductores sobre los cables o hilos sustentadores o conductores de la línea de contacto será de 2 metros.
+Además, en el caso de ferrocarriles, tranvías o trolebuses provistos de trole, o de otros elementos de toma de corriente que puedan, accidentalmente, separarse
+de la línea de contacto, los conductores de la línea eléctrica deberán estar situados a una altura tal que, al desconectarse el elemento de toma de corriente,
+no alcance, en la posición más desfavorable que pueda adoptar, una separación inferior a 0,30 metros con los conductores de la línea de baja tensión
+3.9.1.6 Con teleféricos y cables transportadores.
+Cuando la línea de baja tensión pase por encima, la distancia mínima entre los conductores y cualquier elemento de la instalación del teleférico será de
+2 metros. Cuando la línea aérea de baja tensión pase por debajo está distancia no será inferior a 3 metros. Los apoyos adyacentes del teleférico correspondiente
+al cruce con la línea de baja tensión se pondrán a tierra.
+3.9.1.7 Con ríos y canales navegables o flotables.
+La altura mínima de los conductores sobre la superficie del agua para el máximo nivel que puede alcanzar será de: H = G + 1 m, donde G es el gálibo
+En el caso de que no exista gálibo definido se considerará éste igual a 6 metros.
+3.9.1.8 Con antenas receptoras de radio y televisión.
+Los conductores de la línea de baja tensión, cuando sean desnudos, deberán presentar, como mínimo, una distancia igual a 1 m con respecto a la antena en
+si, a sus tirantes y a sus conductores de bajada, cuando éstos no estén fijados a las paredes de manera que eviten el posible contacto con la línea de
+baja tensión.
+Queda prohibida la utilización de los apoyos de sustentación de líneas de baja tensión para la fijación sobre los mismos de las antenas de radio o televisión,
+así como de los tirantes de las mismas.
+3.9.1.9 Con canalizaciones de agua y gas
+La distancia mínima entre cables de energía eléctrica y canalizaciones de agua o gas será de 0,20 m. Se evitará el cruce por la vertical de las juntas
+de las canalizaciones de agua o gas, o de los empalmes de la canalización eléctrica, situando unas y otros a una distancia superior a 1 m del cruce. Para
+líneas aéreas desnudas la distancia mínima será 1 m.
+3.9.2 Proximidades y paralelismos
+3.9.2.1 Con líneas eléctricas aéreas de alta tensión.
+Se cumplirá lo dispuesto en el Reglamento de Líneas Eléctricas Aéreas de Alta Tensión, para evitar la construcción de líneas paralelas con las de alta
+tensión a distancias inferiores a 1,5 veces la altura del apoyo más alto entre las trazas de los conductores más próximos.
+Se exceptúa de la prescripción anterior las líneas de acceso a centrales generadoras, estaciones transformadoras y centros de transformación. En estos
+casos se aplicará lo prescrito en los reglamentos aplicables a instalaciones de alta tensión. No obstante, en paralelismos con líneas de tensión igual
+o inferior a 66 kV no deberá existir una separación inferior a 2 metros entre los conductores contiguos de las líneas paralelas, y de 3 metros para tensiones
+superiores.
+Las líneas eléctricas de baja tensión podrán ir en los mismos apoyos que las de alta tensión cuando se cumplan las condiciones siguientes:
+– Los conductores de la línea de alta tensión tendrán una carga de rotura mínima de 480 daN, e irán colocados por encima de los de baja tensión.
+– La distancia entre los conductores más próximos de las dos líneas será, por lo menos, igual a la separación de los conductores de la línea de alta tensión.
+– En los apoyos comunes, deberá colocarse una indicación, situada entre las líneas de baja y alta tensión, que advierta al personal que ha de realizar
+trabajos en baja tensión de los peligros que supone la presencia de una línea de alta tensión en la parte superior.
+– El aislamiento de la línea de baja tensión no será inferior al correspondiente de puesta a tierra de la línea de alta tensión.
+3.9.2.2 Con otras líneas de baja tensión o de telecomunicación.
+Cuando ambas líneas sean de conductores aislados, la distancia mínima será de 0,10 m.
+Cuando cualquiera de las líneas sea de conductores desnudos, la distancia mínima será de 1 m. Si ambas líneas van sobre los mismos apoyos, la distancia
+mínima podrá reducirse a 0,50 m. El nivel de aislamiento de la línea de telecomunicación será, al menos, igual al de la línea de baja tensión, de otra forma se considerará como
+línea de conductores desnudos.
+Cuando el paralelismo sea entre líneas desnudas de baja tensión, las distancias mínimas son las establecidas en el apartado 3.2.2
+3.9.2.3 Con calles y carreteras.
+Las líneas aéreas con conductores desnudos podrán establecerse próximas a estás vías públicas, debiendo en su instalación mantener la distancia mínima
+de 6 m, cuando vuelen junto a las mismas en zonas o espacios de posible circulación rodada, y de 5 m en los demás casos. Cuando se trate de conductores
+aislados, esta distancia podrá reducirse a 4 metros cuando no vuelen junto a zonas o espacios de posible circulación rodada.
+3.9.2.4 Con ferrocarriles electrificados, tranvías y trolebuses.
+La distancia horizontal de los conductores a la instalación de la línea de contacto será de 1,5 m, como mínimo.
+3.9.2.5 Con zonas de arbolado.
+Se utilizarán preferentemente cables aislados en haz; cuando la línea sea de conductores desnudos deberán tomarse las medidas necesarias para que el árbol
+y sus ramas, no lleguen a hacer contacto con dicha línea.
+3.9.2.6 Con canalizaciones de agua
+La distancia mínima entre los cables de energía eléctrica y las canalizaciones de agua será de 0,20 m. La distancia mínima entre los empalmes de los cables
+de energía eléctrica o entre los cables desnudos y las juntas de las canalizaciones de agua será de 1 m.
+Se deberá mantener una distancia mínima de 0,20 m en proyección horizontal, y se procurará que la canalización de agua quede por debajo del nivel del cable
+eléctrico.
+Por otro lado, las arterias principales de agua se dispondrán de forma que se aseguren distancias superiores a 1 m respecto a los cables eléctricos de
+baja tensión.
+3.9.2.7 Con canalizaciones de gas
+La distancia mínima entre los cables de energía eléctrica y las canalizaciones de gas será de 0,20 m, excepto para canalizaciones de gas de alta presión
+(más de 4 bar), en que la distancia será de 0,40 m. La distancia mínima entre los empalmes de los cables de energía eléctrica o entre los cables desnudos
+y las juntas de las canalizaciones de gas será de 1 m.
+Se procurará mantener una distancia mínima de 0,20 m en proyección horizontal.
+Por otro lado, las arterias importantes de gas se dispondrán de forma que se aseguren distancias superiores a 1 m respecto a los cables eléctricos de baja
+tensión.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 4, 1, 'Las intensidades máximas admisibles que figuran en los siguientes apartados de esta Instrucción, se aplican a los cables aislados de tensión asignada de
+0,6/1 kV y a los conductores desnudos utilizados en redes aéreas.');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 4, 2, 'Satisfarán las exigencias especificadas en UNE 21.030.
+4.2.1 Intensidades máximas admisibles
+En las tablas 3, 4 y 5 figuran las intensidades máximas admisibles en régimen permanente, para algunos de estos tipos de cables, utilizados en condiciones
+normales de instalación.
+Se definen como condiciones normales de instalación las correspondientes a un solo cable, instalado al aire libre, y a una temperatura ambiente de 40 ºC
+Para condiciones de instalación diferentes u otras variables a tener en cuenta, se aplicarán los factores de corrección definidos en el apartado 4.2.2.
+4.2.1.1 Cables con neutro fiador de aleación de Aluminio-Magnesio-Silicio (Almelec) para instalaciones de cables tensados
+Tabla 3. Intensidad máxima admisible en amperios a temperatura ambiente de 40 ºC
+tabla de 2 columnas y 7 filas
+Número de conductores por sección mm²
+Intensidad máxima A
+1 x 25 Al/54,6 Alm
+110
+1 x 50 Al/54,6 Alm
+165
+3 x 25 Al/54,6 Alm
+100
+3 x 50 Al/54,6 Alm
+150
+3 x 95 Al/54,6 Alm
+230
+3 x 150 Al/80 Alm
+305
+Final de tabla
+4.2.1.2 Cables sin neutro fiador para instalaciones de cables posados, o tensados con fiador de acero
+Tabla 4. Intensidad máxima admisible en amperios a temperatura ambiente de 40 ºC
+
+Número de conductores por secciónmm²
+Intensidad máxima en A
+mm² Número de conductores por secciónmm²
+Posada sobre fachadas
+Tendida con fiador de acero
+2 x 16 Al
+73
+81
+2 x 25 Al
+101
+109
+4 x 16 Al
+67
+72
+4 x 25 Al
+90
+97
+4 x 50 Al
+133
+144
+3 x 95/50 Al
+207
+223
+3 x 150/95 Al
+277
+301
+
+Tabla 5. Intensidad máxima admisible en amperios a temperatura ambiente de 40 ºC
+
+Número de conductores por secciónmm2
+Intensidad máxima en A
+mm2 Número de conductores por secciónmm2
+Posada sobre fachada
+Tendida con fiador de acero
+2 x 10 Cu
+77
+85
+4 x 10 Cu
+65
+72
+4 x 16 Cu
+86
+95
+
+4.2.2 Factores de corrección
+4.2.2.1 Instalación expuesta directamente al sol.
+En zonas en las que la radiación solar es muy fuerte, se deberá tener en cuenta el calentamiento de la superficie de los cables con relación a la temperatura
+ambiente, por lo que en estos casos se aplica un factor de corrección 0,9 o inferior, tal como recomiendan las normas de la serie UNE 20.435.
+4.2.2.2 Factores de corrección por agrupación de varios cables.
+En la tabla 6 figuran los factores de corrección de la intensidad máxima admisible, en caso de agrupación de varios cables en haz al aire. Estos factores
+se aplican a cables separados entre sí, una distancia comprendida entre un diámetro y un cuarto de diámetro en tendidos horizontales con cables en el mismo
+plano vertical.
+Para otras separaciones o agrupaciones consultar la norma UNE 21.144 -2-2
+Tabla 6. Factores de corrección de la intensidad máxima admisible en caso de agrupación de cables aislados en haz, instalados al aire
+Número de cables 1 2 3 más de 3
+Factor de corrección 1,00 0,89 0,80 0,75
+Imagen /imagenes/disp/2002/224/18099_image3.png
+A efectos de cálculo se considera como diámetro de un cable en haz, 2,5 veces el diámetro del conductor de fase.
+4.2.2.3 Factores de corrección en función de la temperatura ambiente.
+En la tabla 7 figuran los factores de corrección para temperaturas diferentes a 40 ºC.
+Tabla 7. Factores de corrección de la intensidad máxima admisible para cables aislados en haz, en función de la temperatura ambiente
+Temperatura ºC 20 25 30 35 40 45 50
+Aislados con polietileno reticulado 1,18 1,14 1,10 1,05 1,00 0,95 0,90
+4.2.3 Intensidades máximas de cortocircuito admisible en los conductores de los cables.
+En la tabla 8 y 9 se indican las intensidades de cortocircuito admisibles, en función de los diferentes tiempos de duración del cortocircuito.
+Tabla 8. Intensidades máximas de cortocircuitos en kA para conductores de aluminio
+
+Sección del conductor mm2
+Duración del cortocircuitos
+ Sección del conductor mm2
+0,1
+0,2
+0,3
+0,5
+1,0
+1,5
+2,0
+2,5
+3,0
+16
+4,7
+3,2
+2,7
+2,1
+1,4
+1,2
+1,0
+0,9
+0,8
+25
+7,3
+5,0
+4,2
+3,3
+2,3
+1,9
+1,0
+1,4
+1,3
+50
+14,7
+10,1
+8,5
+6,6
+4,6
+3,8
+3,3
+2,9
+2,7
+95
+27,9
+19,2
+16,1
+12,5
+8,8
+7,2
+6,2
+5,6
+5,1
+150
+44,1
+30,4
+25,5
+19,8
+13,9
+11,4
+9,9
+8,8
+8,1
+Tabla 9. Intensidades máximas de cortocircuitos en kA para conductores de cobre
+Sección del conductor mm2
+Duración del cortocircuitos
+ Sección del conductor mm2
+0,1
+0,2
+0,3
+0,5
+1,0
+1,5
+2,0
+2,5
+3,0
+1016
+4,817,34
+3,295,23
+2,704,29
+2,113,35
+1,522,40
+1,261,99
+1,111,74
+1,001,57
+0,921,44');
+insert into llx_dolielec_revt(id, idap, idsubap, ctx) values('itc06', 4, 3, 'Las intensidades máximas admisibles en régimen permanente serán las obtenidas por aplicación de la tabla siguiente:
+Tabla 10. Densidad de corriente en A/mm² para conductores desnudos al aire
+tabla de 3 columnas y 11 filas
+Sección nominal mm²
+Densidad de corriente A/mm²
+ Sección nominal mm²
+Cobre
+Aluminio
+10
+8,75
+–
+16
+7,60
+6,00
+25
+6,35
+5,00
+35
+5,75
+4,55
+50
+5,10
+4,00
+70
+4,50
+3,55
+95
+4,05
+3,20
+120
+–
+2,90
+150
+–
+2 70');
+insert into llx_dolielec_rebt(id, idap, idsubap, ctx) values('itc06', 4, 4, '4.4 Otros cables u otros sistemas de instalación
+Para cualquier otro tipo de cable o composiciones u otro sistema de instalación no contemplado en esta Instrucción, así como para cables que no figuran
+en la tablas anteriores, deberán consultarse las normas de la serie UNE 20.435, o calcularse según la norma UNE 21.144.');

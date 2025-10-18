@@ -1,0 +1,326 @@
+<?php
+// geoloc.php — configuración de geolocalización (estilo openai.php limpio)
+// Sin inline JS de toggle; los cambios dinámicos los gestiona js/geoloc.js.php
+
+// === Bootstrap Dolibarr ===
+if (!defined('DOL_DOCUMENT_ROOT')) {
+    $res = 0;
+    if (!$res && file_exists("../../main.inc.php"))       $res = @include("../../main.inc.php");
+    if (!$res && file_exists("../../../main.inc.php"))    $res = @include("../../../main.inc.php");
+    if (!$res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
+    if (!$res) die('Include of main fails');
+}
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once '../lib/dolielec.lib.php';
+
+$langs->loadLangs(array('admin','dolielec'));
+if (empty($user->admin)) accessforbidden();
+
+// === Parámetros ===
+$action = GETPOST('action','alpha');
+$isSave = ($action === 'save_geoloc');
+
+// === INPUTS (estilo OPEN: variables arriba) ===
+$in = array(
+    // core
+    'DOLIELEC_GEO_PROVIDER' => GETPOST('DOLIELEC_GEO_PROVIDER','alpha'),
+    'DOLIELEC_GEO_API_KEY'  => GETPOST('DOLIELEC_GEO_API_KEY','alphanohtml'),
+    // base address
+    'DOLIELEC_GEO_COUNTRY'  => GETPOST('DOLIELEC_GEO_COUNTRY','alpha'),
+    'DOLIELEC_GEO_ADDR'     => GETPOST('DOLIELEC_GEO_ADDR','alphanohtml'),
+    'DOLIELEC_GEO_ZIP'      => GETPOST('DOLIELEC_GEO_ZIP','alpha'),
+    'DOLIELEC_GEO_TOWN'     => GETPOST('DOLIELEC_GEO_TOWN','alphanohtml'),
+    'DOLIELEC_GEO_STATE'    => GETPOST('DOLIELEC_GEO_STATE','alphanohtml'),
+    // select / numbers
+    'DOLIELEC_ROUTE_OPTIMIZE'   => GETPOST('DOLIELEC_ROUTE_OPTIMIZE','alpha'),
+    'DOLIELEC_ROUTE_BUFFER_MIN' => (int)GETPOST('DOLIELEC_ROUTE_BUFFER_MIN','int'),
+    // costes
+    'DOLIELEC_DRIVE_EUR_PER_KM'     => GETPOST('DOLIELEC_DRIVE_EUR_PER_KM','alphanohtml'),
+    'DOLIELEC_PARKING_EUR_PER_H'    => GETPOST('DOLIELEC_PARKING_EUR_PER_H','alphanohtml'),
+    'DOLIELEC_PT_MIN_PER_ZONE'      => (int)GETPOST('DOLIELEC_PT_MIN_PER_ZONE','int'),
+    'DOLIELEC_ATM_TITLE'            => GETPOST('DOLIELEC_ATM_TITLE','alphanohtml'),
+    'DOLIELEC_ATM_MUNI_CSV'         => GETPOST('DOLIELEC_ATM_MUNI_CSV','alphanohtml'),
+    'DOLIELEC_ATM_METRO_TARIFA'     => (GETPOST('DOLIELEC_ATM_METRO_TARIFA','alpha')!=='' ? 1 : 0),
+    'DOLIELEC_PRICE_ROUND_MODE'     => GETPOST('DOLIELEC_PRICE_ROUND_MODE','alpha'),
+    'DOLIELEC_PRICE_ROUND_STEP_EUR' => GETPOST('DOLIELEC_PRICE_ROUND_STEP_EUR','alphanohtml'),
+    'DOLIELEC_PRICE_SMOOTH_EUR'     => GETPOST('DOLIELEC_PRICE_SMOOTH_EUR','alphanohtml'),
+    'DOLIELEC_PRICE_SMOOTH_PCT'     => GETPOST('DOLIELEC_PRICE_SMOOTH_PCT','alphanohtml'),
+    'DOLIELEC_PROPAL_AUTOLINE'      => (GETPOST('DOLIELEC_PROPAL_AUTOLINE','alpha')!=='' ? 1 : 0),
+    'DOLIELEC_TRAVEL_PRESENTATION'  => GETPOST('DOLIELEC_TRAVEL_PRESENTATION','alpha'),
+    'DOLIELEC_PROPAL_LABEL'         => GETPOST('DOLIELEC_PROPAL_LABEL','alphanohtml'),
+    'DOLIELEC_BASE_FEE_LABEL'       => GETPOST('DOLIELEC_BASE_FEE_LABEL','alphanohtml'),
+    'DOLIELEC_PROPAL_VAT'           => GETPOST('DOLIELEC_PROPAL_VAT','alphanohtml'),
+
+    // viaje ida+vuelta y billete sencillo por embarque
+    'DOLIELEC_TRAVEL_MULTIPLIER' => GETPOST('DOLIELEC_TRAVEL_MULTIPLIER','alphanohtml'),
+    'DOLIELEC_SINGLE_BUS_EUR'    => GETPOST('DOLIELEC_SINGLE_BUS_EUR','alphanohtml'),
+    'DOLIELEC_SINGLE_METRO_EUR'  => GETPOST('DOLIELEC_SINGLE_METRO_EUR','alphanohtml'),
+    'DOLIELEC_SINGLE_TRAM_EUR'   => GETPOST('DOLIELEC_SINGLE_TRAM_EUR','alphanohtml'),
+    'DOLIELEC_SINGLE_TRAIN_EUR'  => GETPOST('DOLIELEC_SINGLE_TRAIN_EUR','alphanohtml'),
+);
+// checkboxes multi
+foreach (array(
+  'DOLIELEC_MODE_DRIVE','DOLIELEC_MODE_FOOT','DOLIELEC_MODE_TRANSIT_TRAIN','DOLIELEC_MODE_TRANSIT_BUS','DOLIELEC_MODE_TRANSIT_METRO','DOLIELEC_MODE_BIKE',
+  'DOLIELEC_SHOW_COST_ON_THIRDPARTY',
+  'DOLIELEC_AVOID_HIGHWAYS','DOLIELEC_AVOID_TOLLS','DOLIELEC_AVOID_FERRIES','DOLIELEC_AVOID_STAIRS','DOLIELEC_AVOID_HILLS','DOLIELEC_AVOID_CROWDS','DOLIELEC_AVOID_FORDS'
+) as $k) { $in[$k] = (GETPOST($k,'alpha')!=='' ? 1 : 0); }
+
+// === Validación mínima ===
+$allowedProviders = array('osm','google','ors');
+if (!in_array($in['DOLIELEC_GEO_PROVIDER'], $allowedProviders, true)) $in['DOLIELEC_GEO_PROVIDER'] = 'osm';
+$needsKey = in_array($in['DOLIELEC_GEO_PROVIDER'], array('google','ors'), true);
+if ($isSave && $needsKey && $in['DOLIELEC_GEO_API_KEY']==='') {
+    setEventMessages($langs->trans("ErrorApiKeyRequired"), null, 'errors');
+    $action = '';
+}
+
+// === SAVE (compacto, sin florituras) ===
+if ($action === 'save_geoloc') {
+    $S = function($name, $val, $type='chaine') use ($db, $conf) { dolibarr_set_const($db, $name, $val, $type, 0, '', $conf->entity); };
+    foreach (array(
+        'DOLIELEC_GEO_PROVIDER','DOLIELEC_GEO_API_KEY','DOLIELEC_GEO_COUNTRY','DOLIELEC_GEO_ADDR','DOLIELEC_GEO_ZIP',
+        'DOLIELEC_GEO_TOWN','DOLIELEC_GEO_STATE','DOLIELEC_ROUTE_OPTIMIZE',
+        'DOLIELEC_DRIVE_EUR_PER_KM','DOLIELEC_PARKING_EUR_PER_H','DOLIELEC_ATM_TITLE',
+        'DOLIELEC_ATM_MUNI_CSV','DOLIELEC_PRICE_ROUND_MODE','DOLIELEC_PRICE_ROUND_STEP_EUR',
+        'DOLIELEC_PRICE_SMOOTH_EUR','DOLIELEC_PRICE_SMOOTH_PCT','DOLIELEC_TRAVEL_PRESENTATION',
+        'DOLIELEC_PROPAL_LABEL','DOLIELEC_BASE_FEE_LABEL','DOLIELEC_PROPAL_VAT'
+    ) as $k) { $S($k, $in[$k], 'chaine'); }
+    foreach (array('DOLIELEC_PT_MIN_PER_ZONE','DOLIELEC_ROUTE_BUFFER_MIN') as $k) { $S($k, (int)$in[$k], 'int'); }
+    foreach (array(
+        'DOLIELEC_MODE_DRIVE','DOLIELEC_MODE_FOOT','DOLIELEC_MODE_TRANSIT_TRAIN','DOLIELEC_MODE_TRANSIT_BUS','DOLIELEC_MODE_TRANSIT_METRO','DOLIELEC_MODE_BIKE',
+        'DOLIELEC_ATM_METRO_TARIFA','DOLIELEC_PROPAL_AUTOLINE','DOLIELEC_SHOW_COST_ON_THIRDPARTY',
+        'DOLIELEC_AVOID_HIGHWAYS','DOLIELEC_AVOID_TOLLS','DOLIELEC_AVOID_FERRIES','DOLIELEC_AVOID_STAIRS','DOLIELEC_AVOID_HILLS','DOLIELEC_AVOID_CROWDS','DOLIELEC_AVOID_FORDS'
+    ) as $k) { $S($k, (int)$in[$k], 'int'); }
+	$multiplier = getDolGlobalString('DOLIELEC_TRAVEL_MULTIPLIER','2');
+$single_bus = getDolGlobalString('DOLIELEC_SINGLE_BUS_EUR','0.00');
+$single_metro = getDolGlobalString('DOLIELEC_SINGLE_METRO_EUR','0.00');
+$single_tram = getDolGlobalString('DOLIELEC_SINGLE_TRAM_EUR','0.00');
+$single_train = getDolGlobalString('DOLIELEC_SINGLE_TRAIN_EUR','0.00');
+    setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
+    // --- DoliElec: actualizar checksum de configuración GEO para recálculos automáticos ---
+    $conf_for_checksum = array(
+        // Proveedor y modos
+        'DOLIELEC_GEO_PROVIDER' => $in['DOLIELEC_GEO_PROVIDER'],
+        'DOLIELEC_MODE_DRIVE'   => (int)$in['DOLIELEC_MODE_DRIVE'],
+        'DOLIELEC_MODE_FOOT'    => (int)$in['DOLIELEC_MODE_FOOT'],
+        'DOLIELEC_MODE_TRANSIT_TRAIN' => (int)$in['DOLIELEC_MODE_TRANSIT_TRAIN'],
+        'DOLIELEC_MODE_TRANSIT_BUS'   => (int)$in['DOLIELEC_MODE_TRANSIT_BUS'],
+        'DOLIELEC_MODE_TRANSIT_METRO' => (int)$in['DOLIELEC_MODE_TRANSIT_METRO'],
+        'DOLIELEC_MODE_BIKE'          => (int)$in['DOLIELEC_MODE_BIKE'],
+        // Evitar
+        'DOLIELEC_AVOID_HIGHWAYS' => (int)$in['DOLIELEC_AVOID_HIGHWAYS'],
+        'DOLIELEC_AVOID_TOLLS'    => (int)$in['DOLIELEC_AVOID_TOLLS'],
+        'DOLIELEC_AVOID_FERRIES'  => (int)$in['DOLIELEC_AVOID_FERRIES'],
+        'DOLIELEC_AVOID_STAIRS'   => (int)$in['DOLIELEC_AVOID_STAIRS'],
+        'DOLIELEC_AVOID_HILLS'    => (int)$in['DOLIELEC_AVOID_HILLS'],
+        'DOLIELEC_AVOID_CROWDS'   => (int)$in['DOLIELEC_AVOID_CROWDS'],
+		'DOLIELEC_AVOID_FORDS'   => (int)$in['DOLIELEC_AVOID_FORDS'],
+        // Dirección base
+        'DOLIELEC_GEO_COUNTRY' => $in['DOLIELEC_GEO_COUNTRY'],
+        'DOLIELEC_GEO_ADDR'    => $in['DOLIELEC_GEO_ADDR'],
+        'DOLIELEC_GEO_ZIP'     => $in['DOLIELEC_GEO_ZIP'],
+        'DOLIELEC_GEO_TOWN'    => $in['DOLIELEC_GEO_TOWN'],
+        'DOLIELEC_GEO_STATE'   => $in['DOLIELEC_GEO_STATE'],
+        // Optimización y buffer
+        'DOLIELEC_ROUTE_OPTIMIZE'   => $in['DOLIELEC_ROUTE_OPTIMIZE'],
+        'DOLIELEC_ROUTE_BUFFER_MIN' => (int)$in['DOLIELEC_ROUTE_BUFFER_MIN'],
+        // Costes base / tarifas
+        'DOLIELEC_DRIVE_EUR_PER_KM'  => $in['DOLIELEC_DRIVE_EUR_PER_KM'],
+        'DOLIELEC_PARKING_EUR_PER_H' => $in['DOLIELEC_PARKING_EUR_PER_H'],
+        'DOLIELEC_PT_MIN_PER_ZONE'   => (int)$in['DOLIELEC_PT_MIN_PER_ZONE'],
+        'DOLIELEC_ATM_TITLE'         => $in['DOLIELEC_ATM_TITLE'],
+        'DOLIELEC_ATM_MUNI_CSV'      => $in['DOLIELEC_ATM_MUNI_CSV'],
+        'DOLIELEC_ATM_METRO_TARIFA'  => (int)$in['DOLIELEC_ATM_METRO_TARIFA'],
+        // Redondeo / estabilidad / presentación / IVA
+        'DOLIELEC_PRICE_ROUND_MODE'     => $in['DOLIELEC_PRICE_ROUND_MODE'],
+        'DOLIELEC_PRICE_ROUND_STEP_EUR' => $in['DOLIELEC_PRICE_ROUND_STEP_EUR'],
+        'DOLIELEC_PRICE_SMOOTH_EUR'     => $in['DOLIELEC_PRICE_SMOOTH_EUR'],
+        'DOLIELEC_PRICE_SMOOTH_PCT'     => $in['DOLIELEC_PRICE_SMOOTH_PCT'],
+        'DOLIELEC_TRAVEL_PRESENTATION'  => $in['DOLIELEC_TRAVEL_PRESENTATION'],
+        'DOLIELEC_PROPAL_LABEL'         => $in['DOLIELEC_PROPAL_LABEL'],
+        'DOLIELEC_BASE_FEE_LABEL'       => $in['DOLIELEC_BASE_FEE_LABEL'],
+        'DOLIELEC_PROPAL_VAT'           => $in['DOLIELEC_PROPAL_VAT'],
+    );
+    // Nota: NO incluimos la API key en el checksum (no afecta al coste)
+    $checksum_geo = sha1(json_encode($conf_for_checksum));
+    dolibarr_set_const($db, 'DOLIELEC_GEO_CONF_CHECKSUM', $checksum_geo, 'chaine', 0, '', $conf->entity);
+
+}
+
+// === LOAD actuales (para pintar) ===
+$prov   = getDolGlobalString('DOLIELEC_GEO_PROVIDER','osm');
+$key    = getDolGlobalString('DOLIELEC_GEO_API_KEY','');
+$ct     = getDolGlobalString('DOLIELEC_GEO_COUNTRY','ES');
+$addr   = getDolGlobalString('DOLIELEC_GEO_ADDR','');
+$zip    = getDolGlobalString('DOLIELEC_GEO_ZIP','');
+$town   = getDolGlobalString('DOLIELEC_GEO_TOWN','');
+$state  = getDolGlobalString('DOLIELEC_GEO_STATE','');
+
+$modes = array(
+    'drive'         => getDolGlobalInt('DOLIELEC_MODE_DRIVE',0),
+    'foot'          => getDolGlobalInt('DOLIELEC_MODE_FOOT',1),
+    'transit_train' => getDolGlobalInt('DOLIELEC_MODE_TRANSIT_TRAIN',1),
+    'transit_bus'   => getDolGlobalInt('DOLIELEC_MODE_TRANSIT_BUS',1),
+    'transit_metro' => getDolGlobalInt('DOLIELEC_MODE_TRANSIT_METRO',1),
+    'bike'          => getDolGlobalInt('DOLIELEC_MODE_BIKE',0),
+);
+
+$opt    = getDolGlobalString('DOLIELEC_ROUTE_OPTIMIZE','time');
+
+$avoid = array(
+    'HIGHWAYS' => getDolGlobalInt('DOLIELEC_AVOID_HIGHWAYS',0),
+    'TOLLS'    => getDolGlobalInt('DOLIELEC_AVOID_TOLLS',0),
+    'FERRIES'  => getDolGlobalInt('DOLIELEC_AVOID_FERRIES',0),
+    'STAIRS'   => getDolGlobalInt('DOLIELEC_AVOID_STAIRS',0),
+    'HILLS'    => getDolGlobalInt('DOLIELEC_AVOID_HILLS',0),
+    'CROWDS'   => getDolGlobalInt('DOLIELEC_AVOID_CROWDS',0),
+	'FORDS'   => getDolGlobalInt('DOLIELEC_AVOID_FORDS',0),
+);
+
+$buff   = getDolGlobalInt('DOLIELEC_ROUTE_BUFFER_MIN',0);
+$show   = getDolGlobalInt('DOLIELEC_SHOW_COST_ON_THIRDPARTY',0);
+
+// Costes
+$eurkm      = getDolGlobalString('DOLIELEC_DRIVE_EUR_PER_KM','0.35');
+$parkh      = getDolGlobalString('DOLIELEC_PARKING_EUR_PER_H','2.0');
+$ptmin      = getDolGlobalInt('DOLIELEC_PT_MIN_PER_ZONE',12);
+$title      = getDolGlobalString('DOLIELEC_ATM_TITLE','Billete sencillo');
+$csv        = getDolGlobalString('DOLIELEC_ATM_MUNI_CSV','');
+$metro      = getDolGlobalInt('DOLIELEC_ATM_METRO_TARIFA',1);
+$round_mode = getDolGlobalString('DOLIELEC_PRICE_ROUND_MODE','ceil');
+$round_step = getDolGlobalString('DOLIELEC_PRICE_ROUND_STEP_EUR','1.00');
+$smooth_eur = getDolGlobalString('DOLIELEC_PRICE_SMOOTH_EUR','0.50');
+$smooth_pct = getDolGlobalString('DOLIELEC_PRICE_SMOOTH_PCT','3');
+$autoline   = getDolGlobalInt('DOLIELEC_PROPAL_AUTOLINE',1);
+$present    = getDolGlobalString('DOLIELEC_TRAVEL_PRESENTATION','explicit');
+$label      = getDolGlobalString('DOLIELEC_PROPAL_LABEL','Desplazamiento');
+$baselbl    = getDolGlobalString('DOLIELEC_BASE_FEE_LABEL','Tarifa de servicio');
+$vat        = getDolGlobalString('DOLIELEC_PROPAL_VAT','21.0');
+
+// === UI ===
+llxHeader('', $langs->trans("dolielecGeoSetup"));
+
+print load_fiche_titre($langs->trans("dolielecGeoSetup"), '', 'title_setup');
+
+print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'?tab=geoloc">';
+print '<input type="hidden" name="action" value="save_geoloc">';
+print '<div class="div-table-responsive-no-min"><table class="noborder centpercent">';
+
+print '<tr class="liste_titre"><th class="titlefield">'.$langs->trans("Parameter").'</th><th>'.$langs->trans("Value").'</th></tr>';
+
+// Marcador de requerido como en openai.php
+$reqMark = ' *';
+
+// === Proveedor & API key (sin inline JS; toggle lo hace geoloc.js.php) ===
+print '<tr>';
+print '<td><label for="DOLIELEC_GEO_PROVIDER">'.$langs->trans("GeoProvider").$reqMark.'</label></td>';
+print '<td><select name="DOLIELEC_GEO_PROVIDER" id="DOLIELEC_GEO_PROVIDER" required aria-required="true" aria-describedby="geo_provider_help">';
+$opts = array('ors'=>'OpenRouteService','osm'=>'OpenStreetMap','google'=>'Google Maps');
+foreach($opts as $k=>$v){
+    print '<option value="'.$k.'"'.($prov===$k?' selected':'').'>'.$v.'</option>';
+}
+print '</select><div id="geo_provider_help" class="small opacitymedium">'.$langs->trans("GoogleAndORSRequiresAPIKey").'</div></td>';
+print '</tr>';
+
+// Estado inicial en servidor (el JS lo ajustará al vuelo)
+$req = ($prov==='google' || $prov==='ors');
+$aster = '<span id="req_apikey"'.($req?'':" style=\"display:none\"").'> *</span>';
+$attrs = $req ? 'required aria-required="true"' : 'readonly aria-readonly="true" aria-disabled="true"';
+
+print '<tr id="row_api_key">';
+print '<td><label for="DOLIELEC_GEO_API_KEY">'.$langs->trans("ApiKey").$aster.'</label></td>';
+print '<td><input type="text" id="DOLIELEC_GEO_API_KEY" name="DOLIELEC_GEO_API_KEY" class="minwidth300" value="'.dol_escape_htmltag($key).'" '.$attrs.' aria-describedby="geo_apikey_help" title="'.($req?$langs->trans("ApiKeyRequiredForSelectedProvider"):$langs->trans("ApiKeyNotUsedForProvider")).'"><div id="geo_apikey_help" class="small opacitymedium">'.$langs->trans("RequiredForGoogleAndORS").'</div></td>';
+print '</tr>';
+
+// === Dirección base ===
+print '<tr class="liste_titre"><th colspan="2">'.$langs->trans("BaseAddress").'</th></tr>';
+
+print '<tr><td><label for="DOLIELEC_GEO_COUNTRY">'.$langs->trans("CountryCode").$reqMark.'</label></td><td><input type="text" id="DOLIELEC_GEO_COUNTRY" name="DOLIELEC_GEO_COUNTRY" maxlength="2" required aria-required="true" aria-describedby="geo_country_help" value="'.dol_escape_htmltag($ct).'"><div id="geo_country_help" class="small opacitymedium">'.$langs->trans("CountryCodeHelp").'</div></td></tr>';
+
+print '<tr><td><label for="DOLIELEC_GEO_ADDR">'.$langs->trans("Address").$reqMark.'</label></td><td><input type="text" id="DOLIELEC_GEO_ADDR" name="DOLIELEC_GEO_ADDR" required aria-required="true" value="'.dol_escape_htmltag($addr).'"></td></tr>';
+
+print '<tr><td><label for="DOLIELEC_GEO_ZIP">'.$langs->trans("Zip").$reqMark.'</label></td><td><input type="text" id="DOLIELEC_GEO_ZIP" name="DOLIELEC_GEO_ZIP" inputmode="numeric" required aria-required="true" value="'.dol_escape_htmltag($zip).'"></td></tr>';
+
+print '<tr><td><label for="DOLIELEC_GEO_TOWN">'.$langs->trans("Town").$reqMark.'</label></td><td><input type="text" id="DOLIELEC_GEO_TOWN" name="DOLIELEC_GEO_TOWN" required aria-required="true" value="'.dol_escape_htmltag($town).'"></td></tr>';
+
+print '<tr><td><label for="DOLIELEC_GEO_STATE">'.$langs->trans("State").$reqMark.'</label></td><td><input type="text" id="DOLIELEC_GEO_STATE" name="DOLIELEC_GEO_STATE" required aria-required="true" value="'.dol_escape_htmltag($state).'"></td></tr>';
+
+// === Modos de transporte ===
+print '<tr class="liste_titre"><th colspan="2">'.$langs->trans("TransportModes").'</th></tr>';
+print '<tr><td colspan="2"><fieldset><legend class="visually-hidden">'.$langs->trans("TransportModesLegend").'</legend>';
+print '<label for="DOLIELEC_MODE_DRIVE"><input type="checkbox" id="DOLIELEC_MODE_DRIVE" name="DOLIELEC_MODE_DRIVE" '.($modes['drive']?'checked':'').'> '.$langs->trans("ModeDrive").'</label> ';
+print '<label for="DOLIELEC_MODE_FOOT"><input type="checkbox" id="DOLIELEC_MODE_FOOT" name="DOLIELEC_MODE_FOOT" '.($modes['foot']?'checked':'').'> '.$langs->trans("ModeFoot").'</label> ';
+print '<label for="DOLIELEC_MODE_TRANSIT_TRAIN"><input type="checkbox" id="DOLIELEC_MODE_TRANSIT_TRAIN" name="DOLIELEC_MODE_TRANSIT_TRAIN" '.($modes['transit_train']?'checked':'').'> '.$langs->trans("ModeTrain").'</label> ';
+print '<label for="DOLIELEC_MODE_TRANSIT_BUS"><input type="checkbox" id="DOLIELEC_MODE_TRANSIT_BUS" name="DOLIELEC_MODE_TRANSIT_BUS" '.($modes['transit_bus']?'checked':'').'> '.$langs->trans("ModeBus").'</label> ';
+print '<label for="DOLIELEC_MODE_TRANSIT_METRO"><input type="checkbox" id="DOLIELEC_MODE_TRANSIT_METRO" name="DOLIELEC_MODE_TRANSIT_METRO" '.($modes['transit_metro']?'checked':'').'> '.$langs->trans("ModeMetro").'</label> ';
+print '<label for="DOLIELEC_MODE_BIKE"><input type="checkbox" id="DOLIELEC_MODE_BIKE" name="DOLIELEC_MODE_BIKE" '.($modes['bike']?'checked':'').'> '.$langs->trans("ModeBike").'</label>';
+print '</fieldset></td></tr>';
+
+// === Optimización y evitar ===
+print '<tr><td><label for="DOLIELEC_ROUTE_OPTIMIZE">'.$langs->trans("OptimizeBy").'</label></td><td><select name="DOLIELEC_ROUTE_OPTIMIZE" id="DOLIELEC_ROUTE_OPTIMIZE"><option value="time"'.($opt==='time'?' selected':'').'>'.$langs->trans("Time").'</option><option value="cost"'.($opt==='cost'?' selected':'').'>'.$langs->trans("Cost").'</option></select></td></tr>';
+
+print '<tr class="liste_titre"><th colspan="2">'.$langs->trans("Avoid").'</th></tr>';
+print '<tr><td colspan="2"><fieldset><legend class="visually-hidden">'.$langs->trans("AvoidLegend").'</legend>';
+foreach(array('HIGHWAYS'=>'AvoidHighways','TOLLS'=>'AvoidTolls','FERRIES'=>'AvoidFerries','STAIRS'=>'AvoidStairs','HILLS'=>'AvoidHills','CROWDS'=>'AvoidCrowds') as $k=>$tr){
+    $id='DOLIELEC_AVOID_'.$k; $c=!empty($avoid[$k])?'checked':'';
+    print '<label for="'.$id.'" style="margin-right:1rem;"><input type="checkbox" id="'.$id.'" name="'.$id.'" '.$c.'> '.$langs->trans($tr).'</label>';
+}
+print '</fieldset></td></tr>';
+
+print '<tr><td><label for="DOLIELEC_ROUTE_BUFFER_MIN">'.$langs->trans("RouteBufferMin").'</label></td><td><input type="number" id="DOLIELEC_ROUTE_BUFFER_MIN" name="DOLIELEC_ROUTE_BUFFER_MIN" value="'.(int)$buff.'"></td></tr>';
+
+print '<tr><td><label for="DOLIELEC_SHOW_COST_ON_THIRDPARTY">'.$langs->trans("ShowCostOnThirdparty").'</label></td><td><input type="checkbox" id="DOLIELEC_SHOW_COST_ON_THIRDPARTY" name="DOLIELEC_SHOW_COST_ON_THIRDPARTY" '.($show?'checked':'').'> <span class="opacitymedium small">'.$langs->trans("TravelCostFreezeNotice").'</span></td></tr>';
+
+// === COSTES base ===
+print '<tr class="liste_titre"><th colspan="2">'.$langs->trans("BaseCosts").'</th></tr>';
+print '<tr><td><label for="DOLIELEC_DRIVE_EUR_PER_KM">'.$langs->trans("DriveCostPerKm").'</label></td><td><input type="number" step="0.01" name="DOLIELEC_DRIVE_EUR_PER_KM" id="DOLIELEC_DRIVE_EUR_PER_KM" value="'.dol_escape_htmltag($eurkm).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_PARKING_EUR_PER_H">'.$langs->trans("ParkingPerHour").'</label></td><td><input type="number" step="0.10" name="DOLIELEC_PARKING_EUR_PER_H" id="DOLIELEC_PARKING_EUR_PER_H" value="'.dol_escape_htmltag($parkh).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_PT_MIN_PER_ZONE">'.$langs->trans("PtMinutesPerZone").'</label></td><td><input type="number" name="DOLIELEC_PT_MIN_PER_ZONE" id="DOLIELEC_PT_MIN_PER_ZONE" value="'.(int)$ptmin.'"></td></tr>';
+// === Política de viaje (ida y vuelta) ===
+print '<tr class="liste_titre"><th colspan="2">'.dol_escape_htmltag($langs->trans("TravelPolicy")).'</th></tr>';
+print '<tr><td><label for="DOLIELEC_TRAVEL_MULTIPLIER">'.dol_escape_htmltag($langs->trans("TravelMultiplier")).' <span class="fieldrequired" aria-hidden="true">*</span></label></td>';
+print '<td><input type="number" min="1" max="2" step="1" id="DOLIELEC_TRAVEL_MULTIPLIER" name="DOLIELEC_TRAVEL_MULTIPLIER" value="'.dol_escape_htmltag($multiplier).'" required aria-required="true" aria-describedby="mult_help">';
+print '<div id="mult_help" class="small opacitymedium">'.dol_escape_htmltag($langs->trans("TravelMultiplierHelp")).'</div></td></tr>';
+// === Billete sencillo por embarque ===
+print '<tr class="liste_titre"><th colspan="2">'.dol_escape_htmltag($langs->trans("SingleTicketPerBoarding")).'</th></tr>';
+print '<tr><td><label for="DOLIELEC_SINGLE_BUS_EUR">'.dol_escape_htmltag($langs->trans("SingleBusPrice")).'</label></td><td><input type="number" step="0.01" min="0" id="DOLIELEC_SINGLE_BUS_EUR" name="DOLIELEC_SINGLE_BUS_EUR" value="'.dol_escape_htmltag($single_bus).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_SINGLE_METRO_EUR">'.dol_escape_htmltag($langs->trans("SingleMetroPrice")).'</label></td><td><input type="number" step="0.01" min="0" id="DOLIELEC_SINGLE_METRO_EUR" name="DOLIELEC_SINGLE_METRO_EUR" value="'.dol_escape_htmltag($single_metro).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_SINGLE_TRAM_EUR">'.dol_escape_htmltag($langs->trans("SingleTramPrice")).'</label></td><td><input type="number" step="0.01" min="0" id="DOLIELEC_SINGLE_TRAM_EUR" name="DOLIELEC_SINGLE_TRAM_EUR" value="'.dol_escape_htmltag($single_tram).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_SINGLE_TRAIN_EUR">'.dol_escape_htmltag($langs->trans("SingleTrainPrice")).'</label></td><td><input type="number" step="0.01" min="0" id="DOLIELEC_SINGLE_TRAIN_EUR" name="DOLIELEC_SINGLE_TRAIN_EUR" value="'.dol_escape_htmltag($single_train).'"></td></tr>';
+// === Tarifas ATM/AMB ===
+print '<tr class="liste_titre"><th colspan="2">'.$langs->trans("ATM_AMB_Tariffs").'</th></tr>';
+print '<tr><td><label for="DOLIELEC_ATM_TITLE">'.$langs->trans("ATMBaseTitle").'</label></td><td><select name="DOLIELEC_ATM_TITLE" id="DOLIELEC_ATM_TITLE">';
+foreach(array('Billete sencillo','T-Casual','T-Usual') as $optv){
+    print '<option value="'.$optv.'"'.($title===$optv?' selected':'').'>'.$optv.'</option>';
+}
+print '</select></td></tr>';
+print '<tr><td><label for="DOLIELEC_ATM_MUNI_CSV">'.$langs->trans("ATMMuniCsv").'</label></td><td><input type="text" name="DOLIELEC_ATM_MUNI_CSV" id="DOLIELEC_ATM_MUNI_CSV" class="minwidth100" value="'.dol_escape_htmltag($csv).'"> <span class="small opacitymedium">'.$langs->trans("NoOfficialApiNote").'</span></td></tr>';
+print '<tr><td><label for="DOLIELEC_ATM_METRO_TARIFA">'.$langs->trans("ATMMetroTariff").'</label></td><td><input type="checkbox" name="DOLIELEC_ATM_METRO_TARIFA" id="DOLIELEC_ATM_METRO_TARIFA" '.($metro?'checked':'').'></td></tr>';
+
+// === Redondeo & Estabilidad ===
+print '<tr class="liste_titre"><th colspan="2">'.$langs->trans("RoundingStability").'</th></tr>';
+print '<tr><td><label for="DOLIELEC_PRICE_ROUND_MODE">'.$langs->trans("RoundMode").'</label></td><td><select name="DOLIELEC_PRICE_ROUND_MODE" id="DOLIELEC_PRICE_ROUND_MODE"><option value="ceil"'.($round_mode==='ceil'?' selected':'').'>'.$langs->trans("RoundUp").'</option><option value="round"'.($round_mode==='round'?' selected':'').'>'.$langs->trans("RoundClassic").'</option><option value="floor"'.($round_mode==='floor'?' selected':'').'>'.$langs->trans("RoundDown").'</option></select></td></tr>';
+print '<tr><td><label for="DOLIELEC_PRICE_ROUND_STEP_EUR">'.$langs->trans("RoundStepEUR").'</label></td><td><input type="number" step="0.01" name="DOLIELEC_PRICE_ROUND_STEP_EUR" id="DOLIELEC_PRICE_ROUND_STEP_EUR" value="'.dol_escape_htmltag($round_step).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_PRICE_SMOOTH_EUR">'.$langs->trans("StabilityThresholdEUR").'</label></td><td><input type="number" step="0.01" name="DOLIELEC_PRICE_SMOOTH_EUR" id="DOLIELEC_PRICE_SMOOTH_EUR" value="'.dol_escape_htmltag($smooth_eur).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_PRICE_SMOOTH_PCT">'.$langs->trans("StabilityThresholdPct").'</label></td><td><input type="number" step="0.1" name="DOLIELEC_PRICE_SMOOTH_PCT" id="DOLIELEC_PRICE_SMOOTH_PCT" value="'.dol_escape_htmltag($smooth_pct).'"></td></tr>';
+
+// === Propales: presentación ===
+print '<tr class="liste_titre"><th colspan="2">'.$langs->trans("ProposalsPresentation").'</th></tr>';
+print '<tr><td><label for="DOLIELEC_PROPAL_AUTOLINE">'.$langs->trans("EnableAutoLine").'</label></td><td><input type="checkbox" name="DOLIELEC_PROPAL_AUTOLINE" id="DOLIELEC_PROPAL_AUTOLINE" '.($autoline?'checked':'').'></td></tr>';
+print '<tr><td><label for="DOLIELEC_TRAVEL_PRESENTATION">'.$langs->trans("TravelPresentation").'</label></td><td><select name="DOLIELEC_TRAVEL_PRESENTATION" id="DOLIELEC_TRAVEL_PRESENTATION"><option value="explicit"'.($present==='explicit'?' selected':'').'>'.$langs->trans("TravelAsSeparateLine").'</option><option value="base_fee"'.($present==='base_fee'?' selected':'').'>'.$langs->trans("TravelInBaseFee").'</option></select></td></tr>';
+print '<tr><td><label for="DOLIELEC_PROPAL_LABEL">'.$langs->trans("TravelLabel").'</label></td><td><input type="text" name="DOLIELEC_PROPAL_LABEL" id="DOLIELEC_PROPAL_LABEL" value="'.dol_escape_htmltag($label).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_BASE_FEE_LABEL">'.$langs->trans("BaseFeeLabel").'</label></td><td><input type="text" name="DOLIELEC_BASE_FEE_LABEL" id="DOLIELEC_BASE_FEE_LABEL" value="'.dol_escape_htmltag($baselbl).'"></td></tr>';
+print '<tr><td><label for="DOLIELEC_PROPAL_VAT">'.$langs->trans("VATorTVA").'</label></td><td><input type="number" step="0.1" name="DOLIELEC_PROPAL_VAT" id="DOLIELEC_PROPAL_VAT" value="'.dol_escape_htmltag($vat).'"></td></tr>';
+
+print '</table></div>';
+print '<div class="center"><input type="submit" class="button button-save" value="'.$langs->trans("Save").'"></div>';
+print '</form>';
+
+// === JS dedicado (se encarga del toggle dinámico) ===
+$js = '/custom/dolielec/js/geoloc.js.php';
+if (file_exists(DOL_DOCUMENT_ROOT . $js)) {
+    $page_name = dol_buildpath($js, 1);
+    print "\n<script type=\"text/javascript\" src=\"".$page_name."\"></script>\n";
+}
+
+llxFooter();

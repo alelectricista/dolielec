@@ -1,0 +1,121 @@
+<?php
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+class OpenAI {
+    private $db;
+    private $api_key;
+    private $endpoint;
+    public function __construct($db) {
+        global $conf, $langs;
+		$langs->loadLangs('dolielec@dolielec');
+        $this->db = $db;
+        $this->api_key = !empty($conf->global->OPENAI_API_KEY) ? $conf->global->OPENAI_API_KEY : getDolGlobalString('OPENAI_API_KEY', '');
+        $this->endpoint = 'https://api.openai.com/v1/';
+    }
+    private function call($path, $method = 'GET', $data = null, $api = '') {
+        global $langs;
+        $api_key = ($api !== '') ? $api : $this->api_key;
+        if (empty($api_key)) {
+            return array('success' => false, 'message' => $langs->trans('MissingAPIKey'));
+        }
+        $url = $this->endpoint . ltrim($path, '/');
+        $opts = array(
+            'method' => $method,
+            'bearer' => $api_key,
+            'accept_json' => 1,
+            'decode_json' => 1,
+            'timeout' => 30,
+        );
+        if ($method === 'POST' && $data !== null) {
+            $opts['body'] = $data;
+            $opts['json_body'] = 1;
+        }
+        $resp = apicall($url, $opts);
+        if (empty($resp) || empty($resp['success'])) {
+            return array(
+                'success' => false,
+                'message' => isset($resp['message']) ? $resp['message'] : $langs->trans('ConnectionFailed'),
+                'http' => isset($resp['http']) ? $resp['http'] : null,
+                'raw' => isset($resp['raw']) ? $resp['raw'] : null,
+            );
+        }
+        return array(
+            'success' => true,
+            'http' => isset($resp['http']) ? $resp['http'] : 200,
+            'json' => isset($resp['json']) ? $resp['json'] : null,
+            'raw' => isset($resp['raw']) ? $resp['raw'] : null,
+        );
+    }
+    public function getModels($api = '') {
+        global $langs;
+        $resp = $this->call('models', 'GET', null, $api);
+        if (empty($resp['success'])) {
+            return $resp;
+        }
+        $json = isset($resp['json']) ? $resp['json'] : null;
+        if (!is_array($json) || empty($json['data']) || !is_array($json['data'])) {
+            return array('success' => false, 'message' => $langs->trans('NoModels'), 'http' => $resp['http'] ?? null, 'raw' => $resp['raw'] ?? null);
+        }
+                $blocked_patterns = array();
+        $filtered = array();
+        foreach ($json['data'] as $m) {
+            $id = is_array($m) ? ($m['id'] ?? '') : (string)$m;
+            if ($id === '') {
+				continue;
+			}
+            $blocked = false;
+            foreach ($blocked_patterns as $patterns) {
+                if (stripos($id, $patterns) !== false) {
+					$blocked = true;
+					break;
+					}
+            }
+            if (!$blocked) {
+				$filtered[] = $id;
+        }
+			}
+        $filtered = array_values(array_unique($filtered));
+        if (empty($filtered)) {
+            return array('success' => false, 'message' => $langs->trans('NoModels'));
+        }
+
+        return array('success' => true, 'models' => $filtered);
+    }
+	public function getApiKey() {
+		global $langs;
+		if (empty(getDolGlobalString('OPENAI_API_KEY'))) {
+			return array('success' => false, 'message' => $langs->trans('MissingAPIKey'));
+		}
+		return getDolGlobalString('OPENAI_API_Key');
+	}
+	public function setPrompt($temp = null, $top = null, $model = null, $reason = null, $maxt = null, $system = '', $user = '', $tools = null, $api_key = '') {
+						if (empty($temp) || $temp == null) {
+							return getDolGlobalString('OPENAI_TEMPERATURE');
+						}
+						if (empty($top) || $top == null) {
+							return getDolGlobalString(OPENAI_TOP_P');
+						}
+						if (empty($model) || $model == null) {
+		 return getDolGlobalString('OPENAI_DEFAULT_MODEL');
+						}
+						if (empty($reason) || $reason == '') {
+$reason = 'medium';
+return $reason;
+						}
+						if (empty($maxt) || $maxt == null) {
+							return getDolGlobalInt('OPENAI_MAX_TOKENS');
+						}
+														$data = array('temperature' => $temp, 'top_p' => $top, 'model' => $model, 'reasoning_effort' => $reason, 'max_output_tokens' => $maxt, 'messages' => array(array('role' => 'system', 'content' => $system), array('role' => 'user', 'content' => $user)));
+				if(is_array($tools) && !empty($tools)) {
+					if(isset($tools['type']) || isset($tools['function'])) {
+						$tools = array($tools);
+								}
+					$data['tools'] = $tools;
+			$data['tool_choice'] = 'auto';
+		}
+		$resp = $this->call('chat/completions', 'POST', $data, $api_key);
+return $resp;
+	}		
+}
