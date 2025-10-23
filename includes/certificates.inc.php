@@ -4,24 +4,19 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/security.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 require_once DOL_DOCUMENT_ROOT.'/ecm/class/ecmfiles.class.php';
 require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/class/doc.class.php';
 require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
-
 global $db, $conf, $langs, $user, $mysoc;
 $langs->loadLangs(array('main','companies','dolielec@dolielec'));
 if (empty($user->rights->dolielec->read)) accessforbidden();
-
 $action  = GETPOST('action','alpha');
 $socid   = GETPOST('socid','int');
-$backurl = !empty($socid)
-    ? dol_buildpath('/societe/card.php',1).'?id='.$socid.'&tab=documents'
-    : dol_buildpath('/custom/dolielec/doc.php?tab=brie',1);
-
+$backurl = !empty($socid) ? dol_buildpath('/societe/card.php',1).'?id='.$socid.'&tab=documents' : dol_buildpath('/custom/dolielec/doc.php',1).'?tab=brie';
 $doc  = new Documentation($db);
 $inst = $doc->getInst();
-
 // Directorios base (convención Dolibarr)
 $modroot   = !empty($conf->dolielec->dir_output) ? $conf->dolielec->dir_output : DOL_DATA_ROOT.'/dolielec';
 $tmpDir    = $modroot.'/var/tmp';
@@ -30,49 +25,44 @@ $certDir   = $modroot.'/docs/cert';
 dol_mkdir($tmpDir);
 dol_mkdir($signedDir);
 dol_mkdir($certDir);
-
-// Ruta plantilla
-$templateBrie = DOL_DATA_ROOT.'/doctemplate/dolielec/brie_template.odt';
-
+// Ruta plantilla (correcta: doctemplates)
+$templateBrie = DOL_DATA_ROOT.'/doctemplates/dolielec/brie_template.odt';
 if ($action === 'brie_save') {
+    // CSRF
+    $token = GETPOST('token','alphanohtml');
+    if (empty($token) || !dol_verifyToken($token)) accessforbidden();
     $form = GETPOST('form','array');
     $out  = GETPOST('out','array');
-
     // 1) Construir datos
     $data = $doc->setBrie($form, $socid);
-
     // 2) Destinatarios
     $targets = array();
-    if (!empty($out['TITULAR']))      $targets[] = 'TITULAR';
-    if (!empty($out['DISTRIBUIDORA']))$targets[] = 'DISTRIBUIDORA';
-    if (!empty($out['INSTALADOR']))   $targets[] = 'INSTALADOR';
-
-    if (empty($targets)) $targets = array('TITULAR'); // por si acaso
-
+    if (!empty($out['TITULAR']))        $targets[] = 'TITULAR';
+    if (!empty($out['DISTRIBUIDORA']))  $targets[] = 'DISTRIBUIDORA';
+    if (!empty($out['INSTALADOR']))     $targets[] = 'INSTALADOR';
+    if (empty($targets)) $targets = array('TITULAR');
     // 3) Generación documentos
     $generated = array();   // signed pdfs absolutos
-    $labelsMap = array(
-        'TITULAR'       => 'Titular',
-        'DISTRIBUIDORA' => 'Distribuidora',
-        'INSTALADOR'    => 'Instalador'
-    );
 
     $cupsSafe   = dol_sanitizeFileName(!empty($data['CUPS']) ? $data['CUPS'] : 'SIN_CUPS');
     $dateSafe   = dol_print_date(dol_now(), '%Y%m%d');
     $baseName   = 'brie_'.$cupsSafe.'_'.$dateSafe;
-
+    // Plantilla debe existir
+    if (!is_readable($templateBrie)) {
+        setEventMessages($langs->trans('TemplateNotFound').' '.$templateBrie, null, 'errors');
+        header('Location: '.$backurl);
+        exit;
+    }
     foreach ($targets as $tg) {
-        $label = isset($labelsMap[$tg]) ? $labelsMap[$tg] : $tg;
         $fname = $baseName.'_'.$tg;
-
         // ODT
         $odtOut = $tmpDir.'/'.$fname.'.odt';
-        $resODT = $doc->renderODT($data, $templateBrie, $odtOut);
+        // >>> orden correcto: (template, output, data)
+        $resODT = $doc->renderODT($templateBrie, $odtOut, $data);
         if (empty($resODT['success'])) {
             setEventMessages($langs->trans('Error').' ODT: '.$resODT['message'], null, 'errors');
             continue;
         }
-
         // PDF
         $pdfTmp = $tmpDir.'/'.$fname.'.pdf';
         $resPDF = $doc->odtToPdf($odtOut, $pdfTmp);
@@ -80,12 +70,11 @@ if ($action === 'brie_save') {
             setEventMessages($langs->trans('Error').' PDF: '.$resPDF['message'], null, 'errors');
             continue;
         }
-
         // Firmar
         try {
             $signedOut = $signedDir.'/'.$fname.'-signed.pdf';
-            $doc->setSign($pdfTmp, $signedOut);
-            if (is_readable($signedOut)) {
+            $ok = $doc->setSign($pdfTmp, $signedOut);
+            if ($ok && is_readable($signedOut)) {
                 $generated[] = $signedOut;
             } else {
                 setEventMessages($langs->trans('ErrorFileNotFound').' (signed pdf)', null, 'errors');
@@ -168,13 +157,12 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
     // Prefills
     $valueDate       = dol_print_date(dol_now(), '%Y-%m-%d'); // HTML date
     $isPerson        = ($inst['type'] === 'person');
-    $prefillTechName = $isPerson ? dol_escape_htmltag(trim(($inst['firstname']??'').' '.($inst['lastname']??''))) : '';
+    $prefillTechName = $isPerson ? dol_escape_htmltag(trim((!empty($inst['firstname'])?$inst['firstname']:'').' '.(!empty($inst['lastname'])?$inst['lastname']:''))) : '';
     $prefillTechDni  = $isPerson ? dol_escape_htmltag($inst['nif']) : '';
-
     print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
     print '<input type="hidden" name="action" value="brie_save">';
     if (!empty($socid)) print '<input type="hidden" name="socid" value="'.$socid.'">';
-
     print '<div class="div-table-responsive-no-min"><table class="noborder centpercent">';
 
     // Fecha
