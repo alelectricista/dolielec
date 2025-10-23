@@ -80,7 +80,6 @@ class Geoloc {
         $line = implode(', ', $build_address);
         return array('line' => $line);
     }
-
     //checking if is client thirdparty
     public function isClient($check = null): bool {
         if ($check === null) {

@@ -51,7 +51,7 @@ print '</tr>';
 print '<tr>';
 print '<td><label for="anthropic_api_key">' . $langs->trans("ANTHROPIC_API_KEY") . ' *</label></td>';
 print '<td><input type="text" id="anthropic_api_key" name="ANTHROPIC_API_KEY" class="minwidth100" required value="' . dol_escape_htmltag($api_key) . '"> ';
-print '<button type="button" id="anthropic_check_api" class="button">' $langs->trans("CheckConnection") . '</button> ';
+print '<button type="button" id="anthropic_check_api" class="button">'.$langs->trans("CheckConnection").'</button> ';
 print '</td>';
 print '</tr>';
 // Model (select vacío si no hay valor guardado)
