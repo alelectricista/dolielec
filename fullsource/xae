@@ -1,0 +1,857 @@
+ ?>");
+
+Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  });
+
+Â  Â  });
+
+});
+
+>>>file: custom/dolielec/js/openai.js.php
+<?php
+$res = 0;
+if (! $res && file_exists("../../main.inc.php")) $res = @include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
+if (! $res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
+if (! $res) die("Include of main fails");
+
+header('Content-Type: application/javascript; charset=UTF-8');
+global $langs;
+$langs->load("dolielec@dolielec");
+
+?>
+
+jQuery(document).ready(function($) {
+if (!$('#openai_api_key').length) return;
+// BotÃ³n: comprobar conexiÃ³n
+
+Â  Â  $('#openai_check_api').click(function(e) {
+
+Â  Â  Â  Â  e.preventDefault();
+
+Â  Â  Â  Â  let api_key = $('#openai_api_key').val();
+
+Â  Â  Â  Â  if (!api_key || api_key.trim() === '') {
+
+Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
+
+Â  Â  Â  Â  Â  Â  return;
+
+Â  Â  Â  Â  }
+
+Â  Â  Â  Â  $.ajax({
+
+Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+
+Â  Â  Â  Â  Â  Â  method: "POST",
+
+Â  Â  Â  Â  Â  Â  dataType: "json",
+
+Â  Â  Â  Â  Â  Â  data: {
+
+Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_conn",
+
+Â  Â  Â  Â  Â  Â  Â  Â  api_key: api_key
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  success: function(response) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  if (response.success) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.models && Array.isArray(response.models)) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  let $modelSelect = $('#openai_model');
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.empty();
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  response.models.forEach(function(model) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.append($('<option>', {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  value: model,
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  text: model
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }));
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  });
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.default_model) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.val(response.default_model);
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+
+Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  });
+
+Â  Â  });
+
+Â  Â  // BotÃ³n: comprobar saldo
+
+Â  Â  $('#check_api_balance').click(function(e) {
+
+Â  Â  Â  Â  e.preventDefault();
+
+Â  Â  Â  Â  $.ajax({
+
+Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+
+Â  Â  Â  Â  Â  Â  method: "POST",
+
+Â  Â  Â  Â  Â  Â  dataType: "json",
+
+Â  Â  Â  Â  Â  Â  data: {
+
+Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_balance"
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  success: function(response) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  if (response.success && typeof response.saldo_eur !== "undefined") {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " â‚¬");
+
+Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+
+Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  });
+
+Â  Â  });
+
+});
+
+>>>file: custom/dolielec/lib/calculate.lib.php
+<?php
+//functions for calculate load previsions on diferent offices, for ITC-BT-10 compliance and other ITC's with same requirements.
+//file started with ITC-BT-10 and ITC-BT-52 calculate functions
+function getCoefi($num): array {
+global $langs;
+if(!is_numeric($num) || $num < 1) {
+return array('success' => false, 'message' => $langs->trans('ValueInvalid'));
+}
+$cs = array('1' => '1', '2' => '2', '3' => '3', '4' => '3.8', '5' => '4.6', '6' => '5.4', '7' => '6.2', '8' => '7', '9' => '7.8', '10' => '8.5', '11' => '9.2', '12' => '9.9', '13' => '10.6', '14' => '11.3', '15' => '11.9', '16' => '12.5', '17' => '13.1', '18' => '13.7', '19' => '14.3', '20' => '14.8', '21' => '15.3');
+if ($num <=21) {
+$result = $cs[$num];
+return array('success' => true, 'value' => $result);
+}
+$response = 15.3+($num-21)*0.5;
+return array('success' => true, 'value' => $response);
+}
+function getHome($nh, $basic = null) {
+    global $langs;
+    $nh = (int) $nh;
+    if ($basic === "" || $basic === null) {
+        $basic = null;
+    }
+	else {
+        $basic = (int) $basic;
+    }
+    if ($nh < 1) {
+        return array('success' => false, 'message' => $langs->trans('NumberInvalid'));
+    }
+    if ($basic !== null) {
+        if ($basic < 0 || $basic > $nh) {
+            return array('success' => false, 'message' => $langs->trans('ValueInvalidOrOutOfRange'));
+        }
+        $elevated = $nh - $basic;
+        $power = ((5.75 * $basic) + (9.2 * $elevated)) / $nh;
+    }
+	else {
+        $power = 9.2; // kW
+    }
+    $cs = getCoefi($nh);
+    if (!$cs['success']) {
+        return $cs;
+	}
+$result = (float) $cs['value'];
+    $avg = $power * $result;
+    return array('success' => true, 'value' => $avg);
+}
+function getComService($elevation = null, $engines = null, $led = null) {
+    global $langs;
+    $elevation = ($elevation === "" || $elevation === null) ? 0 : (int) $elevation;
+    $led = ($led === "" || $led === null) ? 0 : (int) $led;
+    $engines = is_array($engines) ? array_filter($engines, fn($value) => $value !== "" && $value !== null) : [];
+    if ($elevation < 0 || $led < 0 || count(array_filter($engines, fn($value) => !is_numeric($value) || $value < 0)) > 0) {
+        return array('success' => false, 'message' => $langs->trans('OneOrMoreValuesAreInvalid'));
+    }
+    if ($elevation === 0 && array_sum($engines) === 0 && $led === 0) {
+        return array('success' => true, 'value' => 0);
+    }
+    $elecorr = $elevation > 0 ? $elevation * 1.3 : 0;
+    $engicorr = 0;
+    if (count($engines) > 1) {
+        rsort($engines);
+        $engicorr += $engines[0] * 1.25;
+        for ($i = 1; $i < count($engines); $i++) {
+            $engicorr += $engines[$i];
+       }
+    }
+	elseif (count($engines) === 1) {
+        $engicorr += $engines[0];
+    }
+    $il = $led > 0 ? ($led * 1.8) / 1000 : 0;
+    $result = $elecorr + $engicorr + $il;
+    return array('success' => true, 'value' => round($result, 2));
+}
+function getOffice($pl = null, $metter = null) {
+    global $langs;
+    if ($pl === "" || $pl === null) {
+        return array('success' => true, 'value' => 0);
+    }
+    $pl = (int) $pl;
+    $metter = array_filter((array)$metter, fn($value) => $value !== "" && $value !== null);
+    if (count($metter) !== $pl) {
+        return array('success' => false, 'message' => $langs->trans('InvalidMetterFormat'));
+    }
+    $power = 0;
+    foreach ($metter as $m2) {
+        if (!is_numeric($m2) || $m2 <= 0) {
+            return array('success' => false, 'message' => $langs->trans('ValueInvalid'));
+       }
+        $power += max(3450, $m2 * 100); // W
+    }
+    return array('success' => true, 'value' => $power / 1000);
+}
+function getParking($npl, $ev = null, $winn = null, $area = null) {
+    global $langs;
+    $npl = (int) $npl;
+    if ($area === "" || $area === null) {
+        $area = 20;
+    }    $area = (int) $area;
+    if ($npl < 0) {
+        return array('success' => false, 'message' => $langs->trans('numberInvalid'));
+    }
+    if ($npl === 0) {
+        return array('success' => true, 'value' => 0);
+    }
+    $ev = ($ev === "" || $ev === null) ? 1 : (int) $ev;
+    $winn = ($winn === "" || $winn === null) ? 1 : (int) $winn;
+	$result = 0;
+    if ($ev === 1) {
+        $result += $npl * 3.68;
+    }
+	if ($winn === 1) {
+        $result += $npl * $area * 0.02;
+    }
+	else {
+        $result += $npl * $area * 0.01;
+    }
+    if ($result < 3.45) {
+        $result = 3.45;
+    }
+    return array('success' => true, 'value' => $result);
+}
+function getPower($params) {
+global $langs;
+$total = 0;
+if (!empty($params['home'])) {
+$res = getHome($params['home']['nh'] ?? null, $params['home']['basic'] ?? null);
+if (!empty($res['success']) && isset($res['value'])) {
+$total += $res['value'];
+}
+}
+if (!empty($params['service'])) {
+$res = getComService($params['service']['elevation'] ?? null, $params['service']['engines'] ?? [], $params['service']['led'] ?? null);
+if (!empty($res['success']) && isset($res['value'])) {
+$total += $res['value'];
+}
+}
+if (!empty($params['office'])) {
+$res = getOffice($params['office']['pl'] ?? null, $params['office']['metter'] ?? null);
+if (!empty($res['success']) && isset($res['value'])) {
+$total += $res['value'];
+}
+}
+if (!empty($params['parking'])) {
+$res = getParking($params['parking']['npl'] ?? null, $params['parking']['ev'] ?? null, $params['parking']['winn'] ?? null, $params['parking']['area'] ?? null);
+if (!empty($res['success']) && isset($res['value'])) {
+$total += $res['value'];
+}
+}
+if ($total === 0) {
+return array('success' => false, 'message' => $langs->trans('CalculationNotPossible'));
+}
+return array('success' => true, 'value' => round($total, 2));
+}
+function getIndustries($pl = null, $metter = null) {
+    global $langs;
+    if ($pl === "" || $pl === null) {
+        return array('success' => true, 'value' => 0);
+    }
+    $pl = (int) $pl;
+    $metter = array_filter((array)$metter, fn($value) => $value !== "" && $value !== null);
+    if (count($metter) !== $pl) {
+        return array('success' => false, 'message' => $langs->trans('InvalidMetterFormat'));
+    }
+    $power = 0;
+    foreach ($metter as $m2) {
+        if (!is_numeric($m2) || $m2 <= 0) {
+            return array('success' => false, 'message' => $langs->trans('ValueInvalid'));
+       }
+        $power += max(10350, $m2 * 125);
+    }
+    return array('success' => true, 'value' => $power / 1000);
+}
+//ITC-BT-52 compliance
+function getCollectiveParking($pev, $spl) {
+	global $langs, $params;
+	if ($pev < 0) {
+		return array('success' => $langs->trans('NumberInvalid'));
+	}
+		$total = $pev * 0.1;
+		$pot = $total * 3680;
+		$ev = $pot;
+		$response =getPower($params);
+		if(empty($response['success']) || !isset($response['value'])) {
+			return array('success' => false, 'message' => $langs->trans('CalculationFailed'));
+		}
+			if ($spl === 1) {
+$pot = (($response['value'] * 1000) + $ev) * 0.3 / 1000;
+return array ('success' => true, 'value' => $pot);
+		}
+		else {
+			$pot = ($response['value'] * 1000)+ $ev;
+			return array('success' => true, 'values' => $pot);
+		}
+}			
+//calculating wires section, with bt19, bt40, bt20, bt06 compliance.
+function getSystemInstall($route, $cores) {
+$route = trim($route);
+$cores = intval($cores);
+$map = array('A'=>array(3=>'a1', 2=>'a2'), 'B'=>array(3=>'b1', 2=>'b2'), 'C'=>array(3=>'c1', 2=>'c2'), 'G'=>array(3=>'g1'));
+return isset($map[$route][$cores]) ? $map[$route][$cores] : null;
+}
+function getVoltage($i, $longitude, $section, $mat = 'Cu', $family = 'UNI', $phase = 3, $cosphi = 0.8) {
+    $r_cu = array(1.5 => 12.1, 2.5 => 7.41, 4 => 4.61, 6 => 3.08, 10 => 1.83, 16 => 1.15, 25 => 0.727, 35 => 0.524, 50 => 0.387, 70 => 0.268, 95 => 0.193, 120 => 0.153, 150 => 0.124, 185 => 0.0991, 240 => 0.0754, 300 => 0.0601);
+    if ($mat === 'Al' || $mat === 'al') {
+        foreach ($r_cu as $k => $v) {
+$r_cu[$k] = $v * 1.6;
+    }
+}
+    $x_uni = array(1.5 => 0.080, 2.5 => 0.075, 4 => 0.070, 6 => 0.065, 10 => 0.060, 16 => 0.056, 25 => 0.052, 35 => 0.050, 50 => 0.048, 70 => 0.045, 95 => 0.043, 120 => 0.042, 150 => 0.041, 185 => 0.040, 240 => 0.039, 300 => 0.038);
+    $x_multi = array();
+    foreach ($x_uni as $k => $v) {
+$x_multi[$k] = $v * 0.8;
+}
+    $x_map = ($family === 'MULTI' || $family === 'multi') ? $x_multi : $x_uni;
+    if (!isset($r_cu[$section]) || !isset($x_map[$section])) {
+return null;
+}
+    $r = $r_cu[$section];
+    $x = $x_map[$section];
+    $u = ($phase === 3) ? 400 : 230;
+    $k = ($phase === 3) ? sqrt(3) : 2;
+    $l = ($phase === 1 ? $longitude * 2 : $longitude) / 1000;
+    $dv_v = $k * $i * ($r * $cosphi + $x * sqrt(1 - $cosphi * $cosphi)) * $l;
+    return ($dv_v * 100) / $u;
+}
+
+>>>file: custom/dolielec/lib/dolielec.lib.php
+<?php
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/geturl.lib.php';
+require_once 'calculate.lib.php';
+// dolielec.lib.php - Funciones utilitarias para Biel y Dolielec (accesibilidad bloque 17)
+//gestionar pestaÃ±as
+function dolielecTabsConfig () {
+	return array(
+	'openai' => array('OpenaiSettings', 'openai.php'),
+	'google' => array('GoogleAISettings', 'google.php'),
+	'geoloc' => array('GeolocalizationSettings', 'geoloc.php'),
+	'documentation' => array('DocumentationSettings', 'doc.php'),
+	);
+}
+function dolielecAdminPrepareHead () {
+	global $langs;
+	$langs->load("dolielec@dolielec");
+	$self = DOL_URL_ROOT.'/custom/dolielec/admin/setup.php';
+	$cfg = dolielecTabsConfig();
+$head =array();
+$h = 0;
+foreach ($cfg as $id => $t) {
+	$label = $langs->trans($t[0]);
+	$head[$h][0] = $self.'?tab='.$id;
+	$head[$h][1] = $label;
+	$head[$h][2] = $id;
+	$h++;
+}
+return $head;
+}
+//accesibilidad
+function dolielec_print_textfield($label, $name, $value = '', $required = false, $helptext = '')
+{
+    global $langs;
+
+    $fieldid = 'field_' . $name;
+    $asterisk = $required ? '<span class="fieldrequired" title="Campo obligatorio" aria-label="Campo obligatorio">*</span>' : '';
+    $required_attr = $required ? 'required aria-required="true"' : '';
+    $aria_label = $required ? 'aria-label="' . dol_escape_htmltag($label) . ' (requerido)"' : 'aria-label="' . dol_escape_htmltag($label) . '"';
+    print '<tr class="oddeven">';
+    print '<td><label for="' . $fieldid . '">' . $asterisk . $label . '</label></td>';
+    print '<td><input type="text" id="' . $fieldid . '" name="' . $name . '" value="' . dol_escape_htmltag($value) . '" ' . $required_attr . ' ' . $aria_label . ' class="minwidth200"/>';
+    if (!empty($helptext)) print ' <span class="opacitymedium">' . $helptext . '</span>';
+    print '</td>';
+    print '</tr>';
+}
+function dolielec_a11y_print_status($message, $type='ok') {
+    print '<div class="dolielec-status '.($type==='ok'?'ok':'err').'" role="status" aria-live="polite">'
+        .dol_escape_htmltag($message).'</div>';
+}
+function dolielec_a11y_region_start($title, $level=2, $id='') {
+    $h = max(1, min(6, (int)$level));
+    $idattr = $id ? ' id="'.dol_escape_htmltag($id).'"' : '';
+    print '<section class="dolielec-a11y-region" role="region"'.$idattr
+        .' aria-labelledby="dolielec-'.$h.'-'.md5($title).'">';
+    print '<h'.$h.' id="dolielec-'.$h.'-'.md5($title).'">'
+        .dol_escape_htmltag($title).'</h'.$h.'>';
+}
+function dolielec_a11y_region_end() {
+ print '</section>';
+ }
+
+//identidad de biel, bloque 1
+function dolielec_get_biel_identity()
+{
+    static $cache = null;
+    if ($cache !== null) return $cache;
+
+    $path = DOL_DATA_ROOT . '/dolielec/identity/biel_identity.md';
+    if (!file_exists($path)) $path = DOL_DOCUMENT_ROOT . '/custom/dolielec/identity/biel_identity.md';
+
+    $cache = file_exists($path) ? file_get_contents($path) : '';
+    return $cache;
+}
+//saludo
+function dolielec_get_biel_greeting()
+{
+    $id = dolielec_get_biel_identity();
+    foreach (preg_split('/\R/', $id) as $l) {
+        $t = trim($l);
+        if ($t === '' || preg_match('/^(===|tÃ­tulo\\s*:)/i', $t)) continue;
+        if (stripos($t, 'soy biel') !== false) return $t;
+        return $t;
+    }
+    return '';
+}
+
+
+/**
+ * Render accesible (WCAG 2.2 AA) para markdown bÃ¡sico.
+ * Soporta: tÃ­tulos "=== BLOQUE X ===" -> h2, "tÃ­tulo:" -> h3, listas "- ", **negritas**, `code`,
+ * enlaces [txt](url), imÃ¡genes ![alt](src). Incluye landmarks y respeta sr-only/skip-link via CSS.
+ *
+ * @param string $raw Markdown plano
+ * @param string $pageTitle TÃ­tulo accesible de la pÃ¡gina
+ * @return string HTML seguro
+ */
+function dolielec_md_render_accessible($raw, $pageTitle = 'Identidad de Biel')
+{
+    $raw = str_replace(array("\r\n","\r"), "\n", $raw);
+    $raw = str_replace("\\n", "\n", $raw);
+    $lines = explode("\n", $raw);
+    $html = '';
+
+    // Wrapper semÃ¡ntico. Las clases se definen en css/dolielec.css.php
+    $html .= '<a class="skip-link" href="#main-content">'.htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').' â€“ Saltar al contenido</a>';
+    $html .= '<main id="main-content" role="main" tabindex="-1" aria-labelledby="page-title" class="biel-identity" lang="es">';
+    $html .= '<h1 id="page-title" class="visually-hidden">'.htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</h1>';
+
+    $in_list = false;
+
+    foreach ($lines as $line) {
+        $t = trim($line);
+        if ($t === '') { if ($in_list) { $html .= "</ul>\n"; $in_list = false; } continue; }
+
+        // H2 por bloque
+        if (preg_match('/^===\s*BLOQUE\s+\d+\s*===/i', $t)) {
+            if ($in_list) { $html .= "</ul>\n"; $in_list = false; }
+            $html .= '<h2>'.htmlspecialchars($t, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')."</h2>\n";
+            continue;
+        }
+        // H3 por "tÃ­tulo: x"
+        if (preg_match('/^t[iÃ­]tulo\s*:\s*(.+)$/i', $t, $m)) {
+            if ($in_list) { $html .= "</ul>\n"; $in_list = false; }
+            $html .= '<h3>'.htmlspecialchars($m[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')."</h3>\n";
+            continue;
+        }
+        // Imagen
+        if (preg_match('/^!\[([^\]]*)\]\(([^)]+)\)/', $t, $m)) {
+            if ($in_list) { $html .= "</ul>\n"; $in_list = false; }
+            $alt = htmlspecialchars($m[1] !== '' ? $m[1] : 'Imagen', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $src = dolielec_sanitize_url($m[2]);
+            $html .= '<figure><img src="'.$src.'" alt="'.$alt.'" /></figure>'."\n";
+            continue;
+        }
+        // Lista
+        if (preg_match('/^-\s+(.+)/', $t, $m)) {
+            if (!$in_list) { $html .= "<ul>\n"; $in_list = true; }
+            $item = $m[1];
+            // Links [text](url)
+            $item = preg_replace_callback('/\[(.+?)\]\((.+?)\)/', function($mm){
+                $txt = htmlspecialchars($mm[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                $href = dolielec_sanitize_url($mm[2]);
+                return '<a href="'.$href.'">'.$txt.'</a>';
+            }, $item);
+            // CÃ³digo y negritas
+            $item = preg_replace('/`(.+?)`/s', '<code>$1</code>', $item);
+            $item = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $item);
+            $item = htmlspecialchars_decode(htmlspecialchars($item, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+            $html .= "<li>$item</li>\n";
+            continue;
+        }
+        // PÃ¡rrafo
+        $p = $t;
+        $p = preg_replace_callback('/\[(.+?)\]\((.+?)\)/', function($mm){
+            $txt = htmlspecialchars($mm[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $href = dolielec_sanitize_url($mm[2]);
+            return '<a href="'.$href.'">'.$txt.'</a>';
+        }, $p);
+        $p = preg_replace('/`(.+?)`/s', '<code>$1</code>', $p);
+        $p = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $p);
+        $p = htmlspecialchars_decode(htmlspecialchars($p, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+        $html .= "<p>$p</p>\n";
+    }
+    if ($in_list) $html .= "</ul>\n";
+    $html .= '</main>';
+    return $html;
+}
+
+/**
+ * Sanitiza URL a http(s)/mailto Ãºnicamente (para renderer accesible).
+ */
+function dolielec_sanitize_url($url) {
+    $url = trim($url);
+    if (preg_match('#^(https?://|mailto:)#i', $url)) {
+        return htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+    return '#';
+}
+//calling to apis
+/**
+ * Llamada HTTP (GET / POST / PUT / PATCH / HEAD) usando getURLContent() de Dolibarr 22.
+ * Devuelve un array estÃ¡ndar:
+ *   [ 'success'=>bool, 'http'=>int|null, 'json'=>mixed|null, 'raw'=>string|null, 'message'=>string|null ]
+ *
+ * @param string $url
+ * @param array  $opts
+ * @return array
+ */
+function apicall($url, $opts = array())
+{
+    // ----- Lectura de opciones -------------------------------------------------
+    $method      = !empty($opts['method'])      ? $opts['method']      : 'GET';
+    $query       = !empty($opts['query'])       ? $opts['query']       : '';
+    $body        = array_key_exists('body',   $opts) ? $opts['body']   : null;
+    $json_body   = array_key_exists('json_body',$opts) ? (int)$opts['json_body'] : 1;
+	    $multipart   = array_key_exists('multipart',$opts) ? (int)$opts['multipart'] : 0;
+    $bearer      = !empty($opts['bearer'])      ? $opts['bearer']      : '';
+    $headers_in  = !empty($opts['headers']) && is_array($opts['headers']) ? $opts['headers'] : array();
+    $timeout     = !empty($opts['timeout'])     ? intval($opts['timeout']) : 25;
+    $maxredirect = array_key_exists('maxredirect',$opts) ? intval($opts['maxredirect']) : 3;
+    $referer     = !empty($opts['referer'])     ? $opts['referer']     : '';
+    $noproxy     = !empty($opts['noproxy'])     ? intval($opts['noproxy']) : 0;
+    $useragent   = !empty($opts['useragent'])   ? $opts['useragent']   : ('Dolibarr/'.DOL_VERSION.' dolielec/1.0');
+    $accept_json = array_key_exists('accept_json',$opts) ? intval($opts['accept_json']) : 1;
+    $decode_json = array_key_exists('decode_json',$opts) ? intval($opts['decode_json']) : 1;
+	$save_to     = !empty($opts['save_to']) ? $opts['save_to'] : '';
+
+        if (is_array($query)) {
+        $qs = http_build_query($query);
+    } else {
+        $qs = (string) $query;
+    }
+    if ($qs !== '') {
+        $url .= (strpos($url, '?') === false ? '?' : '&') . ltrim($qs, '?&');
+    }
+        $headers = array();
+    if ($accept_json)  $headers[] = 'Accept: application/json';
+    if ($bearer !== '') $headers[] = 'Authorization: Bearer '.$bearer;
+    if ($referer !== '') $headers[] = 'Referer: '.$referer;
+    if ($useragent !== '') $headers[] = 'User-Agent: '.$useragent;
+    if (!empty($headers_in)) {
+        foreach ($headers_in as $h) $headers[] = $h;
+    }
+
+    // ----- Cuerpo para mÃ©todos con payload ------------------------------------
+    $post_data = '';
+    if (in_array($method, array('POST','PUT','PATCH'))) {
+        if ($body !== null) {
+			if ($multipart) {
+				    $post_data = $body;
+			}
+            elseif ($json_body && is_array($body)) {
+                $post_data = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                $has_ct = 0;
+                foreach ($headers as $h) {
+                    if (stripos($h, 'content-type:') === 0) { $has_ct = 1; break; }
+                }
+                if (!$has_ct) $headers[] = 'Content-Type: application/json';
+            } else {
+                $post_data = is_array($body) ? http_build_query($body) : (string) $body;
+            }
+        }
+    }
+
+    // ----- Llamada a getURLContent() ------------------------------------------
+    $r = getURLContent(
+	        $url,                    // 1
+        $method,                 // 2
+        $post_data,              // 3
+        1,                       // 4 followlocation
+        $headers,                // 5
+        array('http','https'),   // 6 allowedschemes
+        $noproxy ? 1 : 0,        // 7 localurl
+        -1,                      // 8 ssl_verifypeer
+        $timeout,                // 9 connect timeout
+        $timeout                 //10 response timeout
+    );
+
+    // ----- Procesado de respuesta ---------------------------------------------
+	$ctype = !empty($r['content_type']) ? $r['content_type'] : '';
+    $http = !empty($r['http_code']) ? intval($r['http_code']) : null;
+
+    if (!empty($r['curl_error_no'])) {
+        return array(
+            'success' => false,
+            'http'    => $http,
+            'json'    => null,
+            'raw'     => isset($r['content']) ? $r['content'] : null,
+			'content_type' => $ctype,
+            'message' => !empty($r['curl_error_msg']) ? $r['curl_error_msg'] : 'Transport error'
+        );
+    }
+
+    $raw = isset($r['content']) ? $r['content'] : '';
+
+    if ($http === null || $http < 200 || $http >= 300) {
+        $msg = 'HTTP '.$http;
+        if ($decode_json && $raw !== '') {
+            $j = json_decode($raw, true);
+            if (is_array($j)) {
+                if (isset($j['error']['message']))       $msg = $j['error']['message'];
+                elseif (isset($j['error']) && is_string($j['error']))  $msg = $j['error'];
+                elseif (isset($j['message']))            $msg = $j['message'];
+                elseif (isset($j['detail']) && is_string($j['detail'])) $msg = $j['detail'];
+            }
+        }
+        return array(
+            'success' => false,
+            'http'    => $http,
+            'json'    => null,            'raw'     => $raw,
+			'content_type' => $ctype,
+            'message' => $msg
+        );
+    }
+if ($save_to !== '') {
+    $dir = dirname($save_to);
+    if (!is_dir($dir)) { dol_mkdir($dir); } // helper Dolibarr
+    file_put_contents($save_to, $raw);
+    return array(
+        'success' => true,
+        'http' => $http,
+        'json' => null,
+        'raw' => null,
+        'file' => $save_to,
+        'content_type' => $ctype,
+        'message' => null
+    );
+}
+    if ($decode_json) {
+        if ($raw === '' || $raw === 'null') {
+            return array('success'=>true,'http'=>$http,'json'=>null,'raw'=>$raw,'content_type'=>$ctype,'message'=>null);
+        }
+        $j = json_decode($raw, true);
+        if (is_array($j)) {
+            return array('success'=>true,'http'=>$http,'json'=>$j,'raw'=>$raw,'content_type'=>$ctype,'message'=>null);
+        }
+        return array(
+            'success' => false,
+            'http'    => $http,
+            'json'    => null,
+            'raw'     => (dol_strlen($raw) > 512 ? dol_substr($raw,0,512).'â€¦' : $raw),
+			'content_type' => $ctype,
+            'message' => 'InvalidJSONResponse'
+        );
+    }
+
+    return array('success'=>true,'http'=>$http,'json'=>null,'raw'=>$raw,'content_type'=>$ctype,'message'=>null);
+}
+
+>>>file: custom/dolielec/sql/dolielec.sql
+-- Cache de costes por tercero/contexto
+<CREATE TABLE IF NOT EXISTS llx_dolielec_cost_cache (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+  entity integer NOT NULL DEFAULT 1,
+  fk_thirdparty integer NOT NULL,
+  context_key varchar(64) NOT NULL,
+  value decimal(24,8) NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_entity_third_ctx (entity, fk_thirdparty, context_key)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Entrenamiento de biel
+CREATE TABLE IF NOT EXISTS llx_dolielec_biel_learn (
+rowid integer AUTO_INCREMENT primary key,
+entity integer not null default 1,
+fk_blockid integer not null,
+fk_sublock integer,
+ctx MEDIUMTEXT not null,
+tms timestamp not null default current_timestamp on update current_timestamp,
+unique key BlockLearningID(fk_blockid, fk_sublock))
+engine=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- frases para relaciÃ³n psicolÃ³gica orientada
+create table if not exists llx_dolielec_rpo (
+rowid integer AUTO_INCREMENT primary key,
+entity integer not null default 1,
+rpoid varchar(10) not null,
+rpo_sentence varchar(255) not null,
+unique key RPO(rpoid))
+engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_dolielec_openai_balance(
+rowid integer auto_increment not null primary key,
+idmodel varchar(5) not null,
+total decimal not null,
+unique key tokenid (idmodel))
+engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS llx_dolielec_anthropic_balance(
+rowid integer auto_increment not null primary key,
+idmodel varchar(5) not null,
+total decimal not null,
+tms timestamp not null default current_timestamp on update current_timestamp,
+unique key tokenid (idmodel))
+engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_dolielec_memories(
+rowid integer auto_increment not null,
+msgid varchar(50) not null,
+message text not null,
+tms timestamp not null default current_timestamp on update current_timestamp,
+unique key id(msgid))
+engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+
+>>>file: custom/dolielec/doc.php
+<?php
+//doc.php - dolielec documentation manager file.
+$res = 0;
+if (!$res) {
+ $res = @include '../../main.inc.php';
+if (!$res) {
+ $res = @include '../../../main.inc.php';
+if (!$res) {
+ $res = @include '../../../../main.inc.php';
+if (!$res) {
+ die('Include of main fails');
+ }
+}
+}
+}
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+global $langs, $user, $conf, $db;
+$langs->loadLangs(array('admin','dolielec@dolielec'));
+if (!$user->rights->dolielec->read) {
+	accessforbidden();
+}
+$action = GETPOST('action', 'alpha');
+$tab = GETPOST('tab', 'alpha') ?? 'signature';
+$head = array();
+$head[] = array(dol_buildpath('/custom/dolielec/doc.php?tab=signature',1), $langs->trans('Signature'), 'signature');
+$head[] = array(dol_buildpath('/custom/dolielec/doc.php?tab=brie',1), $langs->trans('BRIE'), 'BRIE');
+llxHeader('', $langs->trans('InternalDocumentManager'));
+dol_fiche_head($head, $tab, $langs->trans('InternalDocumentManager'));
+switch($tab) {
+	case 'signature':
+	include 'includes/sign.inc.php';
+	break;
+		case 'brie':
+		define('DOLIELEC_brie', 1);
+	include 'includes/certificates.inc.php';
+	break;
+}
+$js = '/custom/dolielec/js/dolielec.js.php';
+echo "\n<script type=\"text/javascript\" src=\"".dol_buildpath($js,1)."\"></script>\n";
+dol_fiche_end();
+llxFooter();
+
+?>>>>file: custom/dolielec/css/dolielec.css.php
+<?php
+// dolielec.css.php - CSS accesible para el mÃ³dulo Dolielec (bloque 17)
+header("Content-type: text/css");
+
+// Estilo para el asterisco de campo obligatorio
+?>
+.fieldrequired {
+    color: #B00020; /* Alto contraste rojo */
+    font-weight: bold;
+    margin-right: 5px;
+    font-size: 1.1em;
+}
+input[required], select[required], textarea[required] {
+    border-left: 4px solid #B00020;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 3px solid #005fcc;
+    outline-offset: 2px;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* === Accesibilidad â€“ helpers comunes === */
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{position:static;width:auto;height:auto;display:inline-block;padding:.5rem 1rem;border:2px solid currentColor;border-radius:.2rem;background:transparent}
+.biel-identity{max-width:70ch;line-height:1.6}
+.biel-identity a{text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px}
+.biel-identity a:focus-visible{outline:3px solid currentColor;outline-offset:3px;border-radius:.2rem}
+.biel-identity h2,.biel-identity h3{margin:1rem 0 .25rem 0}
+.biel-identity ul{padding-left:1.25rem}
+.biel-identity li{margin:.25rem 0}
+.biel-identity code{padding:.1rem .3rem;border:1px solid #888;border-radius:.2rem}
+@media (max-width: 360px){ .biel-identity{max-width:100%;word-break:break-word;overflow-wrap:anywhere} }

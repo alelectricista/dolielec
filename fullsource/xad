@@ -1,0 +1,1115 @@
+PPLIER_CREATE':
+			//case 'LINEORDER_SUPPLIER_MODIFY':
+			//case 'LINEORDER_SUPPLIER_DELETE':
+
+			// Proposals
+			//case 'PROPAL_CREATE':
+			//case 'PROPAL_MODIFY':
+			//case 'PROPAL_VALIDATE':
+			//case 'PROPAL_SENTBYMAIL':
+			//case 'PROPAL_CLASSIFY_BILLED':		// TODO Replace it with PROPAL_BILLED
+			//case 'PROPAL_CLASSIFY_UNBILLED':		// TODO Replace it with PROPAL_UNBILLED
+			//case 'PROPAL_CLOSE_SIGNED':
+			//case 'PROPAL_CLOSE_REFUSED':
+			//case 'PROPAL_DELETE':
+			//case 'LINEPROPAL_INSERT':
+			//case 'LINEPROPAL_MODIFY':
+			//case 'LINEPROPAL_DELETE':
+
+			// SupplierProposal
+			//case 'SUPPLIER_PROPOSAL_CREATE':
+			//case 'SUPPLIER_PROPOSAL_MODIFY':
+			//case 'SUPPLIER_PROPOSAL_VALIDATE':
+			//case 'SUPPLIER_PROPOSAL_SENTBYMAIL':
+			//case 'SUPPLIER_PROPOSAL_CLOSE_SIGNED':
+			//case 'SUPPLIER_PROPOSAL_CLOSE_REFUSED':
+			//case 'SUPPLIER_PROPOSAL_DELETE':
+			//case 'LINESUPPLIER_PROPOSAL_INSERT':
+			//case 'LINESUPPLIER_PROPOSAL_MODIFY':
+			//case 'LINESUPPLIER_PROPOSAL_DELETE':
+
+			// Contracts
+			//case 'CONTRACT_CREATE':
+			//case 'CONTRACT_MODIFY':
+			//case 'CONTRACT_ACTIVATE':
+			//case 'CONTRACT_CANCEL':
+			//case 'CONTRACT_CLOSE':
+			//case 'CONTRACT_DELETE':
+			//case 'LINECONTRACT_INSERT':
+			//case 'LINECONTRACT_MODIFY':
+			//case 'LINECONTRACT_DELETE':
+
+			// Bills
+			//case 'BILL_CREATE':
+			//case 'BILL_MODIFY':
+			//case 'BILL_VALIDATE':
+			//case 'BILL_UNVALIDATE':
+			//case 'BILL_SENTBYMAIL':
+			//case 'BILL_CANCEL':
+			//case 'BILL_DELETE':
+			//case 'BILL_PAYED':
+			//case 'LINEBILL_INSERT':
+			//case 'LINEBILL_MODIFY':
+			//case 'LINEBILL_DELETE':
+
+			// Recurring Bills
+			//case 'BILLREC_MODIFY':
+			//case 'BILLREC_DELETE':
+			//case 'BILLREC_AUTOCREATEBILL':
+			//case 'LINEBILLREC_MODIFY':
+			//case 'LINEBILLREC_DELETE':
+
+			//Supplier Bill
+			//case 'BILL_SUPPLIER_CREATE':
+			//case 'BILL_SUPPLIER_MODIFY':
+			//case 'BILL_SUPPLIER_DELETE':
+			//case 'BILL_SUPPLIER_PAYED':
+			//case 'BILL_SUPPLIER_UNPAYED':
+			//case 'BILL_SUPPLIER_VALIDATE':
+			//case 'BILL_SUPPLIER_UNVALIDATE':
+			//case 'LINEBILL_SUPPLIER_CREATE':
+			//case 'LINEBILL_SUPPLIER_MODIFY':
+			//case 'LINEBILL_SUPPLIER_DELETE':
+
+			// Payments
+			//case 'PAYMENT_CUSTOMER_CREATE':
+			//case 'PAYMENT_SUPPLIER_CREATE':
+			//case 'PAYMENT_ADD_TO_BANK':
+			//case 'PAYMENT_DELETE':
+
+			// Online
+			//case 'PAYMENT_PAYBOX_OK':
+			//case 'PAYMENT_PAYPAL_OK':
+			//case 'PAYMENT_STRIPE_OK':
+
+			// Donation
+			//case 'DON_CREATE':
+			//case 'DON_MODIFY':
+			//case 'DON_DELETE':
+
+			// Interventions
+			//case 'FICHINTER_CREATE':
+			//case 'FICHINTER_MODIFY':
+			//case 'FICHINTER_VALIDATE':
+			//case 'FICHINTER_CLASSIFY_BILLED':			// TODO Replace it with FICHINTER_BILLED
+			//case 'FICHINTER_CLASSIFY_UNBILLED':		// TODO Replace it with FICHINTER_UNBILLED
+			//case 'FICHINTER_DELETE':
+			//case 'LINEFICHINTER_CREATE':
+			//case 'LINEFICHINTER_MODIFY':
+			//case 'LINEFICHINTER_DELETE':
+
+			// Members
+			//case 'MEMBER_CREATE':
+			//case 'MEMBER_VALIDATE':
+			//case 'MEMBER_SUBSCRIPTION':
+			//case 'MEMBER_MODIFY':
+			//case 'MEMBER_NEW_PASSWORD':
+			//case 'MEMBER_RESILIATE':
+			//case 'MEMBER_DELETE':
+
+			// Categories
+			//case 'CATEGORY_CREATE':
+			//case 'CATEGORY_MODIFY':
+			//case 'CATEGORY_DELETE':
+			//case 'CATEGORY_SET_MULTILANGS':
+
+			// Projects
+			//case 'PROJECT_CREATE':
+			//case 'PROJECT_MODIFY':
+			//case 'PROJECT_DELETE':
+
+			// Project tasks
+			//case 'TASK_CREATE':
+			//case 'TASK_MODIFY':
+			//case 'TASK_DELETE':
+
+			// Task time spent
+			//case 'TASK_TIMESPENT_CREATE':
+			//case 'TASK_TIMESPENT_MODIFY':
+			//case 'TASK_TIMESPENT_DELETE':
+			//case 'PROJECT_ADD_CONTACT':
+			//case 'PROJECT_DELETE_CONTACT':
+			//case 'PROJECT_DELETE_RESOURCE':
+
+			// Shipping
+			//case 'SHIPPING_CREATE':
+			//case 'SHIPPING_MODIFY':
+			//case 'SHIPPING_VALIDATE':
+			//case 'SHIPPING_SENTBYMAIL':
+			//case 'SHIPPING_BILLED':
+			//case 'SHIPPING_CLOSED':
+			//case 'SHIPPING_REOPEN':
+			//case 'SHIPPING_DELETE':
+
+			// and more...
+
+			//default:
+//				dol_syslog("Trigger '".$this->name."' for action '".$action."' launched by ".__FILE__.". id=".$object->id);
+				//break;
+		//}
+//return 0;
+	//}
+
+    public function companyModify($action, $object, User $user, Translate $langs, Conf $conf)
+    {
+        if (!is_object($object) || empty($object->element) || $object->element !== 'societe') return 0;
+        $clientflag = isset($object->client) ? (int)$object->client : 0;
+        if ($clientflag !== 1 && $clientflag !== 3) return 0;
+        // Cargar extrafields
+        if ((!isset($object->array_options) || !is_array($object->array_options)) && method_exists($object,'fetch_optionals')) {
+            $object->fetch_optionals();
+        }
+        if (!isset($object->array_options) || !is_array($object->array_options)) {
+            $object->array_options = array();
+        }
+        $k = 'options_dolielec_travel_cost_eur';
+        if (!array_key_exists($k, $object->array_options) || $object->array_options[$k] === '' || $object->array_options[$k] === null) {
+            $object->array_options[$k] = '0.0';
+            if (method_exists($object,'updateExtraFields')) {
+                $object->updateExtraFields();
+            } elseif (method_exists($object,'insertExtraFields')) {
+                $object->insertExtraFields();
+            }
+        }
+        return 0;
+    }
+
+}
+
+// TODO: could not locate method companyCreate
+
+>>>file: custom/dolielec/core/triggers/interface_99_moddolielec_ProfitTriggers.class.php
+<?php
+require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/class/profit.class.php';
+
+class InterfaceProfitTriggers extends DolibarrTriggers {
+    public $db;
+    public function __construct($db) {
+        parent::__construct($db);
+        $this->db = $db;
+        $this->family = 'dolielec';
+        $this->description = 'Profitability/Prices/RPO triggers';
+        $this->version = self::VERSIONS['dev'];
+    }
+    public function runTrigger($action, $object, $user, $langs, $conf) {
+        if (!in_array($action, array('PRODUCT_SUPPLIER_PRICE_CREATE', 'PRODUCT_SUPPLIER_PRICE_MODIFY'))) {
+            return 0;
+        }
+       
+        $refSupplier = isset($object->ref_supplier) ? $object->ref_supplier : '';
+        $buyPriceHT = isset($object->fourn_price) ? $object->fourn_price : (isset($object->fourn_pu) ? $object->fourn_pu : 0);
+        
+        if (empty($refSupplier)) {
+            dol_syslog(__METHOD__.': ref_supplier vacÃ­o, abortando', LOG_WARNING);
+            return 0;
+        }
+        if ($buyPriceHT <= 0) {
+            dol_syslog(__METHOD__.': Precio compra invÃ¡lido, abortando', LOG_WARNING);
+            return 0;
+        }
+                $profit = new Profit($this->db);
+        $result = $profit->getPrice($refSupplier, $buyPriceHT);
+              if (!$result['success']) {
+            dol_syslog(__METHOD__.': Profit->getPrice KO: '.$result['message'], LOG_WARNING);
+            return -1;
+        }
+             dol_syslog(__METHOD__.': Precio calculado automÃ¡ticamente: '.$result['price'].' EUR', LOG_INFO);
+        return 0;
+    }
+
+}>>>file: custom/dolielec/includes/certificates.inc.php
+<?php
+// custom/dolielec/includes/certificates.inc.php
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/security.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
+require_once DOL_DOCUMENT_ROOT.'/ecm/class/ecmfiles.class.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/class/doc.class.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+global $db, $conf, $langs, $user, $mysoc;
+$langs->loadLangs(array('main','companies','dolielec@dolielec'));
+if (empty($user->rights->dolielec->read)) accessforbidden();
+$action  = GETPOST('action','alpha');
+$socid   = GETPOST('socid','int');
+$backurl = !empty($socid) ? dol_buildpath('/societe/card.php',1).'?id='.$socid.'&tab=documents' : dol_buildpath('/custom/dolielec/doc.php',1).'?tab=brie';
+$doc  = new Documentation($db);
+$inst = $doc->getInst();
+// Directorios base (convenciÃ³n Dolibarr)
+$modroot   = !empty($conf->dolielec->dir_output) ? $conf->dolielec->dir_output : DOL_DATA_ROOT.'/dolielec';
+$tmpDir    = $modroot.'/var/tmp';
+$signedDir = $modroot.'/docs/signed';
+$certDir   = $modroot.'/docs/cert';
+dol_mkdir($tmpDir);
+dol_mkdir($signedDir);
+dol_mkdir($certDir);
+// Ruta plantilla (correcta: doctemplates)
+$templateBrie = DOL_DATA_ROOT.'/doctemplates/dolielec/brie_template.odt';
+if ($action === 'brie_save') {
+    // CSRF
+    $token = GETPOST('token','alphanohtml');
+    if (empty($token) || !dol_verifyToken($token)) accessforbidden();
+    $form = GETPOST('form','array');
+    $out  = GETPOST('out','array');
+    // 1) Construir datos
+    $data = $doc->setBrie($form, $socid);
+    // 2) Destinatarios
+    $targets = array();
+    if (!empty($out['TITULAR']))        $targets[] = 'TITULAR';
+    if (!empty($out['DISTRIBUIDORA']))  $targets[] = 'DISTRIBUIDORA';
+    if (!empty($out['INSTALADOR']))     $targets[] = 'INSTALADOR';
+    if (empty($targets)) $targets = array('TITULAR');
+    // 3) GeneraciÃ³n documentos
+    $generated = array();   // signed pdfs absolutos
+
+    $cupsSafe   = dol_sanitizeFileName(!empty($data['CUPS']) ? $data['CUPS'] : 'SIN_CUPS');
+    $dateSafe   = dol_print_date(dol_now(), '%Y%m%d');
+    $baseName   = 'brie_'.$cupsSafe.'_'.$dateSafe;
+    // Plantilla debe existir
+    if (!is_readable($templateBrie)) {
+        setEventMessages($langs->trans('TemplateNotFound').' '.$templateBrie, null, 'errors');
+        header('Location: '.$backurl);
+        exit;
+    }
+    foreach ($targets as $tg) {
+        $fname = $baseName.'_'.$tg;
+        // ODT
+        $odtOut = $tmpDir.'/'.$fname.'.odt';
+        // >>> orden correcto: (template, output, data)
+        $resODT = $doc->renderODT($templateBrie, $odtOut, $data);
+        if (empty($resODT['success'])) {
+            setEventMessages($langs->trans('Error').' ODT: '.$resODT['message'], null, 'errors');
+            continue;
+        }
+        // PDF
+        $pdfTmp = $tmpDir.'/'.$fname.'.pdf';
+        $resPDF = $doc->odtToPdf($odtOut, $pdfTmp);
+        if (empty($resPDF['success'])) {
+            setEventMessages($langs->trans('Error').' PDF: '.$resPDF['message'], null, 'errors');
+            continue;
+        }
+        // Firmar
+        try {
+            $signedOut = $signedDir.'/'.$fname.'-signed.pdf';
+            $ok = $doc->setSign($pdfTmp, $signedOut);
+            if ($ok && is_readable($signedOut)) {
+                $generated[] = $signedOut;
+            } else {
+                setEventMessages($langs->trans('ErrorFileNotFound').' (signed pdf)', null, 'errors');
+            }
+        } catch (Exception $e) {
+            setEventMessages($e->getMessage(), null, 'errors');
+        }
+    }
+
+    // 4) Destino
+    $dest = !empty($out['DEST']) ? $out['DEST'] : 'ECM';
+
+    if ($dest === 'ECM') {
+        // Guardar/adjuntar en ECM (si hay tercero)
+        if (!empty($socid)) {
+            foreach ($generated as $abs) {
+                $rel = $doc->attachToThirdparty($socid, $abs);
+                if ($rel === '') {
+                    setEventMessages($langs->trans('Error').' ECM attach: '.basename($abs), null, 'warnings');
+                }
+            }
+            setEventMessages($langs->trans('RecordSaved'), null, 'mesgs');
+            header('Location: '.$backurl);
+            exit;
+        } else {
+            // Sin tercero, igualmente deja los ficheros en signed y muestra mensaje con nombres
+            $names = array_map('basename', $generated);
+            setEventMessages($langs->trans('RecordSaved').' â€” '.implode(', ', $names), null, 'mesgs');
+            header('Location: '.$backurl);
+            exit;
+        }
+    } else {
+        // SIGNED: preparar descarga (si >1 => ZIP)
+        if (count($generated) === 0) {
+            setEventMessages($langs->trans('ErrorFileNotFound'), null, 'errors');
+            header('Location: '.$backurl);
+            exit;
+        }
+        if (count($generated) === 1) {
+            $abs = $generated[0];
+            $bn  = basename($abs);
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="'.dol_escape_htmltag($bn).'"');
+            header('Content-Length: '.filesize($abs));
+            readfile($abs);
+            exit;
+        } else {
+            $zipPath = $tmpDir.'/'.$baseName.'_signed.zip';
+            if (file_exists($zipPath)) @unlink($zipPath);
+            $zip = new ZipArchive();
+            if ($zip->open($zipPath, ZipArchive::CREATE) === true) {
+                foreach ($generated as $abs) {
+                    $zip->addFile($abs, basename($abs));
+                }
+                $zip->close();
+                header('Content-Type: application/zip');
+                header('Content-Disposition: attachment; filename="'.dol_escape_htmltag(basename($zipPath)).'"');
+                header('Content-Length: '.filesize($zipPath));
+                readfile($zipPath);
+                @unlink($zipPath);
+                exit;
+            } else {
+                // Si falla el zip, muestra links en mensaje y vuelve
+                $names = array_map('basename', $generated);
+                setEventMessages($langs->trans('RecordSaved').' â€” '.implode(', ', $names), null, 'mesgs');
+                header('Location: '.$backurl);
+                exit;
+            }
+        }
+    }
+}
+
+if ($action === 'brie' || empty($action) || $action === 'brie_save') {
+    $third = null;
+    if (!empty($socid)) {
+        $third = new Societe($db);
+        $third->fetch($socid);
+    }
+
+    // Prefills
+    $valueDate       = dol_print_date(dol_now(), '%Y-%m-%d'); // HTML date
+    $isPerson        = ($inst['type'] === 'person');
+    $prefillTechName = $isPerson ? dol_escape_htmltag(trim((!empty($inst['firstname'])?$inst['firstname']:'').' '.(!empty($inst['lastname'])?$inst['lastname']:''))) : '';
+    $prefillTechDni  = $isPerson ? dol_escape_htmltag($inst['nif']) : '';
+    print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
+    print '<input type="hidden" name="action" value="brie_save">';
+    if (!empty($socid)) print '<input type="hidden" name="socid" value="'.$socid.'">';
+    print '<div class="div-table-responsive-no-min"><table class="noborder centpercent">';
+
+    // Fecha
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("Date").'</th></tr>';
+    print '<tr><td class="titlefield"><label for="brie_date">'.$langs->trans("Date").' *</label></td>';
+    print '<td colspan="3"><input type="date" id="brie_date" name="form[BRIE_FECHA]" value="'.$valueDate.'" required></td></tr>';
+
+    // IdentificaciÃ³n
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIEIdentification").'</th></tr>';
+    print '<tr><td class="titlefield"><label for="cups">'.$langs->trans("CUPS").' *</label></td><td colspan="3"><input type="text" id="cups" name="form[CUPS]" required class="quatrevingtpercent"></td></tr>';
+
+    // Datos del titular
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIEOwnerData").'</th></tr>';
+    if (!empty($third) && $third->id > 0) {
+        print '<tr><td class="titlefield">'.$langs->trans("Name").' *</td><td>'.dol_escape_htmltag($third->name).'</td>';
+        print '<td>'.$langs->trans("Email").'</td><td>'.dol_escape_htmltag($third->email).'</td></tr>';
+        print '<tr><td>'.$langs->transcountry("ProfId1", !empty($third->country_id) ? $third->country_id : $mysoc->country_id).' *</td><td>'.dol_escape_htmltag($third->idprof1).'</td>';
+        print '<td>'.$langs->trans("Phone").' *</td><td>'.dol_escape_htmltag($third->phone).'</td></tr>';
+        print '<tr><td>'.$langs->trans("Address").' *</td><td colspan="3">'.dol_escape_htmltag($third->address).'</td></tr>';
+        print '<tr><td>'.$langs->trans("Zip").' *</td><td>'.dol_escape_htmltag($third->zip).'</td>';
+        print '<td>'.$langs->trans("Town").' *</td><td>'.dol_escape_htmltag($third->town).'</td></tr>';
+        print '<input type="hidden" name="form[TIT_NIF]" value="'.dol_escape_htmltag($third->idprof1).'">';
+        print '<input type="hidden" name="form[TIT_NOMBRE]" value="'.dol_escape_htmltag($third->name).'">';
+        print '<input type="hidden" name="form[TIT_TLF]" value="'.dol_escape_htmltag($third->phone).'">';
+        print '<input type="hidden" name="form[TIT_DOM]" value="'.dol_escape_htmltag($third->address).'">';
+        print '<input type="hidden" name="form[TIT_CP]" value="'.dol_escape_htmltag($third->zip).'">';
+        print '<input type="hidden" name="form[TIT_LOCALIDAD]" value="'.dol_escape_htmltag($third->town).'">';
+    } else {
+        print '<tr><td class="titlefield"><label for="tit_nombre">'.$langs->trans("Name").' *</label></td><td><input type="text" id="tit_nombre" name="form[TIT_NOMBRE]" required></td>';
+        print '<td><label for="tit_nif">'.$langs->transcountry("ProfId1", $mysoc->country_id).' *</label></td><td><input type="text" id="tit_nif" name="form[TIT_NIF]" required></td></tr>';
+        print '<tr><td><label for="tit_tel">'.$langs->trans("Phone").' *</label></td><td><input type="text" id="tit_tel" name="form[TIT_TLF]" required></td>';
+        print '<td><label for="tit_email">'.$langs->trans("Email").'</label></td><td><input type="email" id="tit_email" name="form[TIT_EMAIL]"></td></tr>';
+        print '<tr><td><label for="tit_dom">'.$langs->trans("Address").' *</label></td><td colspan="3"><input type="text" id="tit_dom" name="form[TIT_DOM]" required class="quatrevingtpercent"></td></tr>';
+        print '<tr><td><label for="tit_cp">'.$langs->trans("Zip").' *</label></td><td><input type="text" id="tit_cp" name="form[TIT_CP]" required></td>';
+        print '<td><label for="tit_loc">'.$langs->trans("Town").' *</label></td><td><input type="text" id="tit_loc" name="form[TIT_LOCALIDAD]" required></td></tr>';
+    }
+
+    // DirecciÃ³n instalaciÃ³n
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIEInstallationPlace").'</th></tr>';
+    print '<tr><td class="titlefield"><label for="via">'.$langs->trans("Street").' *</label></td><td><input type="text" id="via" name="form[VIA]" required></td>';
+    print '<td><label for="num">'.$langs->trans("Number").' *</label></td><td><input type="text" id="num" name="form[NUM]" required></td></tr>';
+    print '<tr><td><label for="piso">'.$langs->trans("Floor").'</label></td><td><input type="text" id="piso" name="form[PISO]"></td>';
+    print '<td><label for="porta">'.$langs->trans("Door").' *</label></td><td><input type="text" id="porta" name="form[PORTA]" required></td></tr>';
+    print '<tr><td><label for="cp">'.$langs->trans("Zip").' *</label></td><td><input type="text" id="cp" name="form[CP]" required></td>';
+    print '<td><label for="loc">'.$langs->trans("Town").' *</label></td><td><input type="text" id="loc" name="form[LOCALIDAD]" required></td></tr>';
+    print '<tr><td><label for="act_ant">'.$langs->trans("PreviousActivity").'</label></td><td><input type="text" id="act_ant" name="form[ACTIVIDAD_ANT]"></td>';
+    print '<td><label for="act_act">'.$langs->trans("NewActivity").'</label></td><td><input type="text" id="act_act" name="form[ACTIVIDAD_ACT]"></td></tr>';
+    print '<tr><td><label for="superf">'.$langs->trans("Surface").' (mÂ²) *</label></td><td><input type="number" id="superf" name="form[SUPERF]" min="0" step="1" required></td><td></td><td></td></tr>';
+
+    // Datos tÃ©cnicos
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIETechnicalData").'</th></tr>';
+    print '<tr><td class="titlefield"><label for="dif_num">Interruptors diferencials â€” '.$langs->trans("RCDNumber").' *</label></td><td><input type="number" id="dif_num" name="form[DIF_NUM]" min="0" step="1" required></td>';
+    print '<td><label for="dif_sens">'.$langs->trans("Sensitivity").' (mA) *</label></td><td><input type="number" id="dif_sens" name="form[DIF_SENS]" min="0" step="1" required></td></tr>';
+    print '<tr><td class="titlefield"><label for="di_sec">'.$langs->trans("Section").' (mmÂ²) *</label></td><td><input type="text" id="di_sec" name="form[DI_SECCION]" required></td><td></td><td></td></tr>';
+    print '<tr><td class="titlefield"><label for="ten_ant">'.$langs->trans("PreviousVoltage").' *</label></td><td><input type="text" id="ten_ant" name="form[TENSION_ANT]" required></td>';
+    print '<td><label for="ten_act">'.$langs->trans("NewVoltage").' *</label></td><td><input type="text" id="ten_act" name="form[TENSION_ACT]" required></td></tr>';
+    print '<tr><td class="titlefield"><label for="pot_max">'.$langs->trans("MaxPowerKW").' *</label></td><td><input type="number" id="pot_max" name="form[POT_MAX]" step="0.01" min="0" required></td>';
+    print '<td><label for="pot_ini">'.$langs->trans("InitialPowerKW").' *</label></td><td><input type="number" id="pot_ini" name="form[POT_INICIAL]" step="0.01" min="0" required></td></tr>';
+    print '<tr><td class="titlefield"><label for="pot_con">'.$langs->trans("ContractedPowerKW").' *</label></td><td><input type="number" id="pot_con" name="form[POT_CONTRATAR]" step="0.01" min="0" required></td>';
+    print '<td><label for="prot_tipo">ProtecciÃ³ general</label></td><td>'.
+        '<span class="opacitymedium">IGA / ICPM</span><br>'.
+        '<label><input type="radio" name="form[PROT_GEN_TIPO]" value="IGA" required> IGA</label>'.
+        '<label class="marginleftonly"><input type="radio" name="form[PROT_GEN_TIPO]" value="ICPM"> ICPM</label> '.
+        '<label for="prot_int">'.$langs->trans("NominalIntensity").' (A) *</label> '.
+        '<input type="number" id="prot_int" name="form[PROT_GEN_INT]" min="0" step="1" required>'.
+    '</td></tr>';
+
+    // Tierra / Aislamiento / Ascensor
+    print '<tr><td class="titlefield"><span id="lbl_tierra">'.$langs->trans("EarthingExists").' *</span></td><td>'.
+         '<div role="group" aria-labelledby="lbl_tierra">'.
+         '  <input type="radio" id="tierra_si" name="form[TIERRA_EXISTE]" value="SI" required aria-labelledby="lbl_tierra"> <label for="tierra_si">'.$langs->trans("Yes").'</label>'.
+         '  <input type="radio" id="tierra_no" name="form[TIERRA_EXISTE]" value="NO" aria-labelledby="lbl_tierra" class="marginleftonly"> <label for="tierra_no">'.$langs->trans("No").'</label>'.
+         '</div>'.
+    '</td>';
+    print '<td><label for="tierra_val">'.$langs->trans("EarthingOhms").' *</label></td><td>'.
+        '<input type="number" id="tierra_val" name="form[TIERRA_VALOR]" step="0.01" min="0" required>'.
+    '</td></tr>';
+
+    print '<tr><td class="titlefield"><span id="lbl_aisla">'.$langs->trans("Insulation").' *</span></td><td>'.
+         '<div role="group" aria-labelledby="lbl_aisla">'.
+         '  <input type="radio" id="aisla_si" name="form[AISLAMIENTO]" value="SI" required aria-labelledby="lbl_aisla"> <label for="aisla_si">'.$langs->trans("Yes").'</label>'.
+         '  <input type="radio" id="aisla_no" name="form[AISLAMIENTO]" value="NO" aria-labelledby="lbl_aisla" class="marginleftonly"> <label for="aisla_no">'.$langs->trans("No").'</label>'.
+         '</div>'.
+    '</td>';
+    print '<td><label for="aisla_val">'.$langs->trans("Resistance").' (Î©) *</label></td><td>'.
+        '<input type="number" id="aisla_val" name="form[AISLAMIENTO_VALOR]" step="1" min="0" required>'.
+    '</td></tr>';
+
+    print '<tr><td class="titlefield"><span id="lbl_asc">'.$langs->trans("Lift").' *</span></td><td>'.
+         '<div role="group" aria-labelledby="lbl_asc">'.
+         '  <input type="radio" id="asc_si" name="form[ASCENSOR]" value="SI" required aria-labelledby="lbl_asc"> <label for="asc_si">'.$langs->trans("Yes").'</label>'.
+         '  <input type="radio" id="asc_no" name="form[ASCENSOR]" value="NO" aria-labelledby="lbl_asc" class="marginleftonly"> <label for="asc_no">'.$langs->trans("No").'</label>'.
+         '</div>'.
+    '</td>';
+    print '<td><label for="pot_asc">'.$langs->trans("LiftPowerKW").' *</label></td><td>'.
+        '<input type="number" id="pot_asc" name="form[POT_ASCENSOR]" step="0.01" min="0" required>'.
+    '</td></tr>';
+
+    // Defectos (8)
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIEDefects").'</th></tr>';
+    $def = array(
+        'DEF_1' => $langs->trans('DefectDirectContact'),
+        'DEF_2' => $langs->trans('DefectProhibitedZoneBathroom'),
+        'DEF_3' => $langs->trans('DefectIndirectContactProtectionLacking'),
+        'DEF_4' => $langs->trans('DefectMainSwitchMissing'),
+        'DEF_5' => $langs->trans('DefectOvercurrentProtectionMissing'),
+        'DEF_6' => $langs->trans('DefectInsulationResistanceLow'),
+        'DEF_7' => $langs->trans('DefectLeakageCurrentHigh'),
+        'DEF_8' => $langs->trans('DefectEarthResistanceHigh')
+    );
+    print '<tr><td colspan="4"><div class="div-table-responsive-no-min"><table class="noborder centpercent">';
+    print '<tr class="liste_titre"><th class="titlefield">'.$langs->trans("Defect").'</th><th>'.$langs->trans("Yes").'</th><th>'.$langs->trans("No").'</th></tr>';
+    $idx = 0;
+    foreach ($def as $k => $label) {
+        $idx++;
+        $rowHdrId = 'defect_'.$idx.'_label';
+        $idYes = 'def_'.$idx.'_si';
+        $idNo  = 'def_'.$idx.'_no';
+        print '<tr>';
+        print '<th id="'.dol_escape_htmltag($rowHdrId).'" scope="row" class="titlefield">'.dol_escape_htmltag($label).'</th>';
+        print '<td>';
+        print '<div role="group" aria-labelledby="'.dol_escape_htmltag($rowHdrId).'">';
+        print '  <input type="radio" id="'.dol_escape_htmltag($idYes).'" name="form['.$k.']" value="SI" required aria-labelledby="'.dol_escape_htmltag($rowHdrId).'">';
+        print '  <label for="'.dol_escape_htmltag($idYes).'">'.$langs->trans("Yes").'</label>';
+        print '</div>';
+        print '</td>';
+        print '<td>';
+        print '<div role="group" aria-labelledby="'.dol_escape_htmltag($rowHdrId).'">';
+        print '  <input type="radio" id="'.dol_escape_htmltag($idNo).'" name="form['.$k.']" value="NO" aria-labelledby="'.dol_escape_htmltag($rowHdrId).'">';
+        print '  <label for="'.dol_escape_htmltag($idNo).'">'.$langs->trans("No").'</label>';
+        print '</div>';
+        print '</td>';
+        print '</tr>';
+    }
+    print '</table></div></td></tr>';
+
+    // Trabajo / comentarios
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIEWorks").'</th></tr>';
+    print '<tr><td class="titlefield"><label for="trab">'.$langs->trans("WorksDone").' *</label></td><td colspan="3"><input type="text" id="trab" name="form[TRABAJO]" required class="quatrevingtpercent"></td></tr>';
+    print '<tr><td><label for="coment">'.$langs->trans("Comments").' *</label></td><td colspan="3"><input type="text" id="coment" name="form[COMENTARIOS]" required class="quatrevingtpercent"></td></tr>';
+
+    // Instalador (mostrar nombre/empresa + RASIC) + firmante
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIEInstaller").'</th></tr>';
+    print '<tr><td class="titlefield">'.$langs->trans("Company").'</td><td>'.dol_escape_htmltag($inst['display']).'</td>';
+    print '<td>'.$langs->transcountry("ProfId4", $mysoc->country_id).'</td><td>'.dol_escape_htmltag($inst['rasic']).'</td></tr>';
+
+    // Prefill del firmante si 401
+    print '<tr><td><label for="cert_nom">'.$langs->trans("TechnicianName").' *</label></td><td><input id="cert_nom" type="text" name="form[CERT_NOMBRE]" required value="'.$prefillTechName.'"></td>';
+    print '<td><label for="cert_dni">'.$langs->transcountry("ProfId1", $mysoc->country_id).' *</label></td><td><input id="cert_dni" type="text" name="form[CERT_DNI]" required value="'.$prefillTechDni.'"></td></tr>';
+
+    print '<tr><td><label for="lugar">'.$langs->trans("Place").' *</label></td><td><input id="lugar" type="text" name="form[LUGAR]" required></td><td></td><td></td></tr>';
+
+    // Salidas
+    print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("Outputs").'</th></tr>';
+    print '<tr><td class="titlefield">'.$langs->trans("GenerateFor").'</td><td colspan="3">
+        <label><input type="checkbox" name="out[TITULAR]" value="1" checked> '.$langs->trans("Owner").'</label>
+        <label class="marginleftonly"><input type="checkbox" name="out[DISTRIBUIDORA]" value="1" checked> '.$langs->trans("Distributor").'</label>
+        <label class="marginleftonly"><input type="checkbox" name="out[INSTALADOR]" value="1" checked> '.$langs->trans("Installer").'</label>
+    </td></tr>';
+    print '<tr><td>'.$langs->trans("Destination").'</td><td colspan="3">
+        <label><input type="radio" name="out[DEST]" value="ECM" checked> '.$langs->trans("SaveInECM").'</label>
+        <label class="marginleftonly"><input type="radio" name="out[DEST]" value="SIGNED"> '.$langs->trans("SaveInSignedFolder").'</label>
+    </td></tr>';
+
+    print '</table></div>';
+    print '<div class="center">';
+    print '<input class="button button-save" type="submit" value="'.$langs->trans("Save").'">';
+    print ' <a class="button" href="'.$backurl.'">'.$langs->trans("Cancel").'</a>';
+    print '</div>';
+    print '</form>';
+}
+
+>>>file: custom/dolielec/includes/sign.inc.php
+<?php
+// sig_form.inc.php â€“ formulario de firma de PDF con certificado digital
+global $langs, $conf;
+$langs->load('dolielec@dolielec');
+
+$cert_file = $conf->global->DOLIELEC_CERT_FILE;
+
+print '<form id="SignPdf" enctype="multipart/form-data" method="POST" action="'.dol_buildpath('/custom/dolielec/doc.php?tab=signature',1).'">';
+print '  <input type="hidden" name="action" value="">';
+print '  <div class="div-table-responsive-no-min">';
+print '    <table class="noborder centpercent">';
+print '      <tr class="liste_titre">';
+print '        <th class="titlefield">'.$langs->trans('DocumentToSign').'</th>';
+print '        <th>'.$langs->trans('Value').'</th>';
+print '      </tr>';
+print '      <tr>';
+print '        <td><label for="file_pdf">'.$langs->trans('ChoosePDF').' *</label></td>';
+print '        <td><input type="file" id="file_pdf" name="file_pdf" class="minwidth200" required accept=".pdf">';
+if ($cert_file) {
+    print '<br><span class="opacitymedium">'.$langs->trans('CertFile').': '.dol_escape_htmltag($cert_file).'</span>';
+}
+print '        </td>';
+print '      </tr>';
+print '    </table>';
+print '  </div>';
+print '  <div class="center">';
+print '<button type="button" id="signPdfBtn" class="button button-sign">'.$langs->trans('SignPDF').'</button>';
+print '  </div>';
+print '</form>';
+
+// Carga JS para firma
+print '<script type="text/javascript" src="'.dol_buildpath('/custom/dolielec/js/doc.js.php',1).'"></script>';
+?>
+
+>>>file: custom/dolielec/js/anthropic.js.php
+<?php
+$res = 0;
+if (! $res && file_exists("../../main.inc.php")) $res = @include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
+if (! $res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
+if (! $res) die("Include of main fails");
+
+header('Content-Type: application/javascript; charset=UTF-8');
+global $langs;
+$langs->load("dolielec@dolielec");
+
+?>
+
+jQuery(document).ready(function($) {
+if (!$('#anthropic_api_key').length) return;
+// BotÃ³n: comprobar conexiÃ³n
+
+Â  Â  $('#anthropic_check_api').click(function(e) {
+
+Â  Â  Â  Â  e.preventDefault();
+
+Â  Â  Â  Â  let api_key = $('#anthropic_api_key').val();
+
+Â  Â  Â  Â  if (!api_key || api_key.trim() === '') {
+
+Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
+
+Â  Â  Â  Â  Â  Â  return;
+
+Â  Â  Â  Â  }
+
+Â  Â  Â  Â  $.ajax({
+
+Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/anthropic.ajax.php', 1); ?>",
+
+Â  Â  Â  Â  Â  Â  method: "POST",
+
+Â  Â  Â  Â  Â  Â  dataType: "json",
+
+Â  Â  Â  Â  Â  Â  data: {
+
+Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_conn",
+
+Â  Â  Â  Â  Â  Â  Â  Â  api_key: api_key
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  success: function(response) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  if (response.success) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.models && Array.isArray(response.models)) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  let $modelSelect = $('#anthropic_model');
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.empty();
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  response.models.forEach(function(model) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.append($('<option>', {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  value: model,
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  text: model
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }));
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  });
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.default_model) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.val(response.default_model);
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+
+Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  });
+
+Â  Â  });
+
+Â  Â  // BotÃ³n: comprobar saldo
+
+Â  Â  $('#check_api_balance').click(function(e) {
+
+Â  Â  Â  Â  e.preventDefault();
+
+Â  Â  Â  Â  $.ajax({
+
+Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+
+Â  Â  Â  Â  Â  Â  method: "POST",
+
+Â  Â  Â  Â  Â  Â  dataType: "json",
+
+Â  Â  Â  Â  Â  Â  data: {
+
+Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_balance"
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  success: function(response) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  if (response.success && typeof response.saldo_eur !== "undefined") {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " â‚¬");
+
+Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+
+Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  });
+
+Â  Â  });
+
+});
+
+>>>file: custom/dolielec/js/doc.js.php
+<?php
+// doc.js.php — dolielec documentation manager JavaScript file.
+$res = 0;
+if (!$res && file_exists("../../main.inc.php"))  $res = @include("../../main.inc.php");
+if (!$res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
+if (!$res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
+if (!$res) die("Include of main fails");
+
+header('Content-Type: application/javascript; charset=UTF-8');
+global $langs;
+$langs->load("dolielec@dolielec");
+?>
+jQuery(document).ready(function($) {
+    if ($('#signPdfBtn').length) {
+    $('#signPdfBtn').on('click', function(e) {
+      e.preventDefault();
+      var fileInput = $('#file_pdf')[0];
+      if (!fileInput.files || !fileInput.files.length) {
+        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv('BadParams')); ?>");
+        return;
+      }
+      var file = fileInput.files[0];
+      var formData = new FormData();
+      formData.append('action', 'signPdf');
+      formData.append('file_pdf', file);
+      $.ajax({
+        url: "<?php echo dol_buildpath('/custom/dolielec/ajax/doc.ajax.php',1); ?>",
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        xhrFields: { responseType: 'blob' },
+        success: function(blob, status, xhr) {
+          var contentType = xhr.getResponseHeader('Content-Type');
+          if (contentType === 'application/pdf') {
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            var origName = file.name;
+            var newName = origName.replace(/\.pdf$/i, '') + '-signed.pdf';
+            a.download = newName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+          } else {
+            var reader = new FileReader();
+            reader.onload = function() {
+              try {
+                var json = JSON.parse(reader.result);
+                alert(json.message || json.error || "<?php echo dol_escape_js($langs->transnoentitiesnoconv('ConnectionFailed')); ?>");
+              } catch (err) {
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv('ConnectionFailed')); ?>");
+              }
+            };
+            reader.readAsText(blob);
+          }
+        },
+        error: function() {
+          alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv('ConnectionFailed')); ?>");
+        }
+      });
+    });
+  }
+
+    if (!$('#cups').length) return;
+
+  function setDisabledWithHidden($input, disable, zeroValue) {
+    if (!$input.length) return;
+
+    var name   = $input.attr('name');
+    var baseId = $input.attr('id') || ('fld_'+Math.random().toString(36).slice(2));
+    $input.attr('id', baseId);
+
+    var hidId  = baseId + '_hidden';
+    var $hidden = $('#'+hidId);
+
+    if (disable) {
+      $input.prop('disabled', true)
+            .prop('required', false)
+            .addClass('opacitymedium');
+
+      if (!$hidden.length) {
+        $hidden = $('<input>', {type:'hidden', id:hidId, name:name, value:(zeroValue!=null?zeroValue:'0')});
+        $input.after($hidden);
+      } else {
+        $hidden.val(zeroValue!=null?zeroValue:'0');
+      }
+    } else {
+      $input.prop('disabled', false)
+            .prop('required', true) // requerido solo cuando está habilitado
+            .removeClass('opacitymedium');
+      if ($hidden.length) $hidden.remove();
+    }
+  }
+
+  function syncTierra() {
+    var yes = $('input[name="form[TIERRA_EXISTE]"][value="SI"]').is(':checked');
+    setDisabledWithHidden($('#tierra_val'), !yes, '0');
+  }
+  function syncAislamiento() {
+    var yes = $('input[name="form[AISLAMIENTO]"][value="SI"]').is(':checked');
+    setDisabledWithHidden($('#aisla_val'), !yes, '0');
+  }
+  function syncAscensor() {
+    var yes = $('input[name="form[ASCENSOR]"][value="SI"]').is(':checked');
+    setDisabledWithHidden($('#pot_asc'), !yes, '0');
+  }
+
+  $('input[name="form[TIERRA_EXISTE]"]').on('change', syncTierra);
+  $('input[name="form[AISLAMIENTO]"]').on('change', syncAislamiento);
+  $('input[name="form[ASCENSOR]"]').on('change', syncAscensor);
+
+  
+  syncTierra();
+  syncAislamiento();
+  syncAscensor();
+
+
+  $('form').on('submit', function(){
+    syncTierra(); syncAislamiento(); syncAscensor();
+  });
+});
+
+>>>file: custom/dolielec/js/dolielec.js.php
+<?php
+$res = 0;
+if (!$res && file_exists("../../main.inc.php"))  $res = @include("../../main.inc.php");
+if (!$res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
+if (!$res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
+if (!$res) die("Include of main fails");
+header('Content-Type: application/javascript; charset=UTF-8');
+
+$openaiJs = dol_buildpath('/custom/dolielec/js/openai.js.php', 1);
+$googleJs = dol_buildpath('/custom/dolielec/js/google.js.php', 1);
+$docJs = dol_buildpath('/custom/dolielec/js/doc.js.php', 1);
+$anthropicJs = dol_buildpath('/custom/dolielec/js/anthropic.js.php', 1);
+?>
+jQuery(function($){
+  function loadScriptOnce(src){
+    if (document.querySelector('script[data-dle-src="'+src+'"]')) return;
+    var s = document.createElement('script');
+    s.src = src;
+    s.async = false;
+    s.setAttribute('data-dle-src', src);
+    document.head.appendChild(s);
+  }
+
+  function needOpenAI(){ return !!(document.getElementById('openai_api_key') || document.getElementById('openai_model')); }
+  function needGoogle(){ return !!(document.getElementById('google_api_key') || document.getElementById('google_model')); }
+  function needAnthropic(){ return !!(document.getElementById('anthropic_api_key') || document.getElementById('anthropic_model')); }
+  function needDocJS(){
+    return !!(
+      document.getElementById('signPdfBtn') ||
+      document.getElementById('file_pdf')   ||
+      document.getElementById('cups')        ||                    // BRIE form
+      document.querySelector('input[name="form[ASCENSOR]"]') ||
+      document.getElementById('pot_asc')     ||
+      document.getElementById('tierra_val')  ||
+      document.getElementById('aisla_val')
+    );
+  }
+
+    if (needOpenAI()) loadScriptOnce('<?php echo $openaiJs; ?>');
+	if (needAnthropic()) loadScriptOnce('<?php echo $anthropicJs; ?>');
+  if (needGoogle()) loadScriptOnce('<?php echo $googleJs; ?>');
+  if (needDocJS())  loadScriptOnce('<?php echo $docJs; ?>');
+
+  $(document).on('click', '.tabBar a', function(){
+    setTimeout(function(){
+      if (needOpenAI()) loadScriptOnce('<?php echo $openaiJs; ?>');
+	  if (needAnthropic()) loadScriptOnce('<?php echo $anthropicJs; ?>');
+      if (needGoogle()) loadScriptOnce('<?php echo $googleJs; ?>');
+      if (needDocJS())  loadScriptOnce('<?php echo $docJs; ?>');
+    }, 50);
+  });
+});
+
+>>>file: custom/dolielec/js/geoloc.js.php
+<?php
+// geoloc.js.php â€” JS especÃ­fico de geolocalizaciÃ³n (sin jQuery), Dolibarr-friendly
+$res = 0;
+if (!$res && file_exists("../../main.inc.php"))       $res = @include("../../main.inc.php");
+if (!$res && file_exists("../../../main.inc.php"))    $res = @include("../../../main.inc.php");
+if (!$res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
+if (!$res) die("Include of main fails");
+header('Content-Type: application/javascript; charset=UTF-8');
+global $langs; $langs->loadLangs(array('dolielec@dolielec'));
+?>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function on(el, ev, fn){ if(el) el.addEventListener(ev, fn, false); }
+
+  // Mantener SIEMPRE visible la fila de API key; alternar sÃ³lo readonly/required y el asterisco
+  function syncApiKey(){
+    var prov = $('DOLIELEC_GEO_PROVIDER');
+    var key  = $('DOLIELEC_GEO_API_KEY');
+    var mark = $('req_apikey');
+    var row  = document.getElementById('row_api_key') || (key && key.closest ? key.closest('tr') : null);
+    if(!prov || !key) return;
+
+    var needs = (prov.value === 'google' || prov.value === 'ors');
+
+    // Nunca ocultar
+    if(row){ row.style.display=''; row.removeAttribute('hidden'); row.style.removeProperty('visibility'); }
+    key.style.display = ''; key.removeAttribute('hidden'); key.style.removeProperty('visibility');
+
+    // No usar disabled (algunos temas ocultan). Usar readonly cuando no se requiere
+    key.disabled = false;
+    key.readOnly = !needs;
+
+    if(needs){
+      key.required = true;
+      key.setAttribute('aria-required','true');
+      key.removeAttribute('aria-readonly');
+      key.removeAttribute('aria-disabled');
+      if(mark) mark.style.display = 'inline';
+    } else {
+      key.required = false;
+      key.removeAttribute('aria-required');
+      key.setAttribute('aria-readonly','true');
+      key.setAttribute('aria-disabled','true');
+      if(mark) mark.style.display = 'none';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var prov = $('DOLIELEC_GEO_PROVIDER');
+    on(prov, 'change', syncApiKey);
+    syncApiKey();
+  });
+
+})();>>>file: custom/dolielec/js/google.js.php
+<?php
+$res = 0;
+if (! $res && file_exists("../../main.inc.php")) $res = @include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
+if (! $res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
+if (! $res) die("Include of main fails");
+
+header('Content-Type: application/javascript; charset=UTF-8');
+global $langs;
+$langs->load("dolielec@dolielec");
+
+?>
+
+jQuery(document).ready(function($) {
+if (!$('#google_api_key').length) return; 
+
+
+Â  Â  // BotÃ³n: comprobar conexiÃ³n
+
+Â  Â  $('#google_check_api').click(function(e) {
+
+Â  Â  Â  Â  e.preventDefault();
+
+Â  Â  Â  Â  let api_key = $('#google_api_key').val();
+
+Â  Â  Â  Â  if (!api_key || api_key.trim() === '') {
+
+Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
+
+Â  Â  Â  Â  Â  Â  return;
+
+Â  Â  Â  Â  }
+
+Â  Â  Â  Â  $.ajax({
+
+Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/google.ajax.php', 1); ?>",
+
+Â  Â  Â  Â  Â  Â  method: "POST",
+
+Â  Â  Â  Â  Â  Â  dataType: "json",
+
+Â  Â  Â  Â  Â  Â  data: {
+
+Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_conn",
+
+Â  Â  Â  Â  Â  Â  Â  Â  api_key: api_key
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  success: function(response) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  if (response.success) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.models && Array.isArray(response.models)) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  let $modelSelect = $('#google_model');
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.empty();
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  response.models.forEach(function(model) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.append($('<option>', {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  value: model,
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  text: model
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }));
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  });
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.default_model) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.val(response.default_model);
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+
+Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  });
+
+Â  Â  });
+
+Â  Â  // BotÃ³n: comprobar saldo
+
+Â  Â  $('#check_api_balance').click(function(e) {
+
+Â  Â  Â  Â  e.preventDefault();
+
+Â  Â  Â  Â  $.ajax({
+
+Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+
+Â  Â  Â  Â  Â  Â  method: "POST",
+
+Â  Â  Â  Â  Â  Â  dataType: "json",
+
+Â  Â  Â  Â  Â  Â  data: {
+
+Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_balance"
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  success: function(response) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  if (response.success && typeof response.saldo_eur !== "undefined") {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " â‚¬");
+
+Â  Â  Â  Â  Â  Â  Â  Â  } else {
+
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+
+Â  Â  Â  Â  Â  Â  Â  Â  }
+
+Â  Â  Â  Â  Â  Â  },
+
+Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+
+Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance"));

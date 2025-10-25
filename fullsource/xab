@@ -1,0 +1,1345 @@
+cSetup'), -1, 'dolielec@dolielec');
+$base = __DIR__;
+include $base.'/'.$cfg[$tab][1];
+$js = '/custom/dolielec/js/dolielec.js.php';
+echo "\n<script type=\"text/javascript\" src=\"".dol_buildpath($js,1)."\"></script>\n";
+dol_fiche_end();
+llxFooter();
+
+>>>file: custom/dolielec/ajax/anthropic.ajax.php
+<?php
+$res = @include '../../main.inc.php';
+if (!$res) $res = @include '../../../main.inc.php';
+if (!$res) {
+    header('Content-Type: application/json');
+    die(json_encode(array('error' => 'main.inc.php not found')));
+}
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/class/anthropic.class.php';
+global $user, $conf, $langs, $db;
+$langs->loadLangs(array('admin','dolielec'));
+if (!$user->admin && empty($user->rights->dolielec->read)) {
+    header('Content-Type: application/json');
+    echo json_encode(array('error' => 'Access denied'));
+    exit;
+}
+$action  = GETPOST('action', 'aZ09');
+$api_key = GETPOST('api_key', 'alphanohtml');
+if (!empty($api_key)) {
+    $conf->global->ANTHROPIC_API_KEY = $api_key;
+}
+header('Content-Type: application/json');
+switch ($action) {
+    case 'check_api_conn':
+        $claude = new ClaudeAI($db);
+        $result = $claude->getModels($api_key);
+        if (!empty($result['success'])) {
+                        echo json_encode(array(
+                'success' => true,
+                'models' => $result['models']));
+            exit;
+        }
+                echo json_encode(array(
+            'success' => false,
+            'message' => $result['message'] ?? $langs->trans('ConnectionFailed'),
+            'http' => $result['http']    ?? null,
+            'raw' => isset($result['raw']) ? (is_string($result['raw']) ? substr($result['raw'],0,2048) : null) : null
+        ));
+        exit;
+    default:
+        echo json_encode(array('error' => 'Unknown action'));
+        exit;
+}
+
+>>>file: custom/dolielec/ajax/doc.ajax.php
+<?php
+// custom/dolielec/ajax/doc.ajax.php
+$res = 0;
+if (!$res && file_exists("../../main.inc.php"))  $res = @include("../../main.inc.php");
+if (!$res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
+if (!$res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
+if (!$res) die("Include of main fails");
+
+require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/security.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/class/doc.class.php';
+
+global $db, $conf, $langs, $user;
+$langs->loadLangs(array('main','companies','dolielec@dolielec'));
+
+if (empty($user->rights->dolielec->read)) accessforbidden();
+
+$action = GETPOST('action','alpha');
+
+// rutas base
+$modroot   = !empty($conf->dolielec->dir_output) ? $conf->dolielec->dir_output : DOL_DATA_ROOT.'/dolielec';
+$tmpDir    = $modroot.'/var/tmp';
+$signedDir = $modroot.'/docs/signed';
+$tplBrie   = DOL_DATA_ROOT.'/doctemplates/dolielec/brie_template.odt';
+dol_mkdir($tmpDir); dol_mkdir($signedDir);
+
+switch ($action) {
+case 'brie_save': // flujo completo por AJAX
+	header('Content-Type: application/json; charset=UTF-8');
+
+	if (empty($user->rights->dolielec->write) && empty($user->admin)) {
+		echo json_encode(array('success'=>false,'message'=>$langs->trans('NotEnoughPermissions'))); exit;
+	}
+	$token = GETPOST('token','alphanohtml');
+	if (empty($token) || !dol_verifyToken($token)) {
+		echo json_encode(array('success'=>false,'message'=>$langs->trans('ErrorBadToken'))); exit;
+	}
+	if (!is_readable($tplBrie)) {
+		echo json_encode(array('success'=>false,'message'=>$langs->trans('TemplateNotFound').' '.$tplBrie)); exit;
+	}
+
+	$socid = GETPOST('socid','int');
+	$form  = GETPOST('form','array');
+	$out   = GETPOST('out','array');
+
+	$doc  = new Documentation($db);
+	$data = $doc->setBrie($form, $socid);
+
+	// destinatarios
+	$targets = array();
+	if (!empty($out['TITULAR']))       $targets[] = 'TITULAR';
+	if (!empty($out['DISTRIBUIDORA'])) $targets[] = 'DISTRIBUIDORA';
+	if (!empty($out['INSTALADOR']))    $targets[] = 'INSTALADOR';
+	if (empty($targets)) $targets = array('TITULAR');
+
+	$cupsSafe = dol_sanitizeFileName(!empty($data['CUPS']) ? $data['CUPS'] : 'SIN_CUPS');
+	$dateSafe = dol_print_date(dol_now(), '%Y%m%d');
+	$baseName = 'brie_'.$cupsSafe.'_'.$dateSafe;
+
+	$files = array();
+	foreach ($targets as $tg) {
+		$fname  = $baseName.'_'.$tg;
+		$odtOut = $tmpDir.'/'.$fname.'.odt';
+		$pdfTmp = $tmpDir.'/'.$fname.'.pdf';
+		$signed = $signedDir.'/'.$fname.'-signed.pdf';
+
+		$r1 = $doc->renderODT($tplBrie, $odtOut, $data);
+		if (empty($r1['success'])) { echo json_encode(array('success'=>false,'message'=>'ODT: '.$r1['message'])); exit; }
+
+		$r2 = $doc->odtToPdf($odtOut, $pdfTmp);
+	if (empty($r2['success'])) { echo json_encode(array('success'=>false,'message'=>'PDF: '.$r2['message'])); exit; }
+
+		$ok = $doc->setSign($pdfTmp, $signed);
+		if (!$ok || !is_readable($signed)) { echo json_encode(array('success'=>false,'message'=>$langs->trans('SignFailed'))); exit; }
+
+		$files[] = array(
+			'name'   => basename($signed),
+			'path'   => $signed,
+			'public' => dol_buildpath('/document.php',1).'?modulepart=dolielec&file='.urlencode('docs/signed/'.basename($signed))
+		);
+	}
+
+	// ECM opcional
+	if (!empty($socid) && !empty($out['DEST']) && $out['DEST']==='ECM') {
+		foreach ($files as $f) { $doc->attachToThirdparty($socid, $f['path']); }
+	}
+
+	echo json_encode(array('success'=>true,'files'=>$files));
+	exit;
+
+case 'signPdf': // firma suelta (subida input file) â†’ devuelve blob/pdf
+	if (empty($user->rights->dolielec->write) && empty($user->admin)) accessforbidden();
+
+	if (empty($_FILES['file_pdf']['tmp_name']) || !is_uploaded_file($_FILES['file_pdf']['tmp_name'])) {
+		header('Content-Type: application/json; charset=UTF-8');
+		echo json_encode(array('success'=>false,'message'=>$langs->trans('BadParams'))); exit;
+	}
+
+	$srcTmp = $tmpDir.'/upload_'.dol_print_date(dol_now(),'dayhourlog').'_'.dol_sanitizeFileName($_FILES['file_pdf']['name']);
+	if (!dol_move_uploaded_file($_FILES['file_pdf']['tmp_name'], $srcTmp, 1, 0, $_FILES['file_pdf']['error'])) {
+		header('Content-Type: application/json; charset=UTF-8');
+		echo json_encode(array('success'=>false,'message'=>$langs->trans('ErrorFileUpload'))); exit;
+	}
+
+	$dest = preg_replace('/\.pdf$/i','-signed.pdf',$srcTmp);
+	$doc  = new Documentation($db);
+	$ok   = $doc->setSign($srcTmp, $dest);
+	if (!$ok || !is_readable($dest)) {
+		header('Content-Type: application/json; charset=UTF-8');
+		echo json_encode(array('success'=>false,'message'=>$langs->trans('SignFailed'))); exit;
+	}
+
+	header('Content-Type: application/pdf');
+	header('Content-Disposition: attachment; filename="'.dol_escape_htmltag(basename($dest)).'"');
+	header('Content-Length: '.filesize($dest));
+	readfile($dest);
+	exit;
+
+default:
+	header('Content-Type: application/json; charset=UTF-8');
+	echo json_encode(array('success'=>false,'message'=>'Unknown action')); exit;
+}
+
+>>>file: custom/dolielec/ajax/google.ajax.php
+<?php
+$res = @include '../../main.inc.php';
+if (!$res) $res = @include '../../../main.inc.php';
+if (!$res) {
+    header('Content-Type: application/json');
+    die(json_encode(array('error' => 'main.inc.php not found')));
+}
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/class/google.class.php';
+global $user, $conf, $langs, $db;
+$langs->loadLangs(array('admin','dolielec'));
+if (!$user->admin && empty($user->rights->dolielec->read)) {
+    header('Content-Type: application/json');
+    echo json_encode(array('error' => 'Access denied'));
+    exit;
+}
+$action  = GETPOST('action', 'aZ09');
+$api_key = GETPOST('api_key', 'alphanohtml');
+if (!empty($api_key)) {
+    $conf->global->GOOGLE_API_KEY = $api_key;
+}
+header('Content-Type: application/json');
+switch ($action) {
+    case 'check_api_conn':
+        $google = new GoogleAI($db);
+        $result = $google->getModels($api_key);
+        if (!empty($result['success'])) {
+                        echo json_encode(array(
+                'success' => true,
+                'models' => $result['models']));
+            exit;
+        }
+                echo json_encode(array(
+            'success' => false,
+            'message' => $result['message'] ?? $langs->trans('ConnectionFailed'),
+            'http' => $result['http']    ?? null,
+            'raw' => isset($result['raw']) ? (is_string($result['raw']) ? substr($result['raw'],0,2048) : null) : null
+        ));
+        exit;
+    default:
+        echo json_encode(array('error' => 'Unknown action'));
+        exit;
+}
+
+>>>file: custom/dolielec/ajax/openai.ajax.php
+<?php
+$res = @include '../../main.inc.php';
+if (!$res) $res = @include '../../../main.inc.php';
+if (!$res) {
+    header('Content-Type: application/json');
+    die(json_encode(array('error' => 'main.inc.php not found')));
+}
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/class/openai.class.php';
+global $user, $conf, $langs, $db;
+$langs->loadLangs(array('admin','dolielec'));
+if (!$user->admin && empty($user->rights->dolielec->read)) {
+    header('Content-Type: application/json');
+    echo json_encode(array('error' => 'Access denied'));
+    exit;
+}
+$action  = GETPOST('action', 'aZ09');
+$api_key = GETPOST('api_key', 'alphanohtml');
+if (!empty($api_key)) {
+    $conf->global->OPENAI_API_KEY = $api_key;
+}
+header('Content-Type: application/json');
+switch ($action) {
+    case 'check_api_conn':
+        $openai = new OpenAI($db);
+        $result = $openai->getModels($api_key);
+        if (!empty($result['success'])) {
+                        echo json_encode(array(
+                'success' => true,
+                'models' => $result['models']));
+            exit;
+        }
+                echo json_encode(array(
+            'success' => false,
+            'message' => $result['message'] ?? $langs->trans('ConnectionFailed'),
+            'http' => $result['http']    ?? null,
+            'raw' => isset($result['raw']) ? (is_string($result['raw']) ? substr($result['raw'],0,2048) : null) : null
+        ));
+        exit;
+    default:
+        echo json_encode(array('error' => 'Unknown action'));
+        exit;
+}
+
+>>>file: custom/dolielec/calc/homeoffices.php
+<?php
+$res = 0;
+if (!$res) {
+ $res = @include '../../main.inc.php';
+if (!$res) {
+ $res = @include '../../../main.inc.php';
+if (!$res) {
+ $res = @include '../../../../main.inc.php';
+if (!$res) {
+ die('Include of main fails');
+ }
+}
+}
+}
+
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+global $conf, $db, $langs, $user;
+$langs->load('dolielec@dolielec');
+$action = GETPOST('action', 'alpha');
+if ($action === 'calculate') {
+    $params = GETPOST('params', 'array');
+    $result = getPower($params);
+
+    print '<div class="div-table-responsive-no-min">';
+    print '<table class="noborder centpercent">';
+    print '<tr class="liste_titre">';
+    print '<th>' . $langs->trans("CalculationResult") . '</th>';
+    print '</tr>';
+    print '<tr>';
+    print '<td>';
+    if (!empty($result['success']) && isset($result['value'])) {
+        print '<strong>' . $langs->trans("TotalPower") . ': ' . dol_escape_htmltag($result['value']) . ' kW</strong>';
+    }
+	else {
+        print '<span class="error">' . dol_escape_htmltag($result['message'] ?? 'Unknown error') . '</span>';
+    }
+    print '</td>';
+    print '</tr>';
+    print '</table>';
+    print '</div>';
+}
+
+print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '">';
+print '<input type="hidden" name="action" value="calculate">';
+print '<div class="div-table-responsive-no-min">';
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<th class="titlefield">' . $langs->trans("Parameter") . '</th>';
+print '<th>' . $langs->trans("Value") . '</th>';
+print '</tr>';
+
+// Homes
+print '<tr>';
+print '<td><label for="nh">' . $langs->trans("NumberOfHomes") . ' *</label></td>';
+print '<td><input type="number" id="nh" name="params[home][nh]" min="0" step="1" required></td>';
+print '</tr>';
+
+print '<tr>';
+print '<td><label for="basic">' . $langs->trans("BasicHomes") . '</label></td>';
+print '<td><input type="number" id="basic" name="params[home][basic]" min="0" step="1" placeholder="0"></td>';
+print '</tr>';
+
+// Services
+print '<tr>';
+print '<td><label for="elevation">' . $langs->trans("Elevators") . '</label></td>';
+print '<td><input type="number" id="elevation" name="params[service][elevation]" min="0" step="1"></td>';
+print '</tr>';
+
+print '<tr>';
+print '<td>' . $langs->trans("Engines") . '</td>';
+print '<td><fieldset><legend class="sr-only">' . $langs->trans("Engines") . '</legend>';
+for ($i = 0; $i < 3; $i++) {
+    $id = 'engine_' . $i;
+    print '<input type="number" id="' . $id . '" 
+        name="params[service][engines][]" 
+        min="0" step="0.1" class="minwidth50" 
+        placeholder="kW" 
+        aria-label="' . $langs->trans("Engine") . ' ' . ($i+1) . '"> ';
+}
+print '</fieldset></td>';
+print '</tr>';
+
+print '<tr>';
+print '<td><label for="led">' . $langs->trans("LightingPowerW") . '</label></td>';
+print '<td><input type="number" id="led" name="params[service][led]" min="0" step="1" placeholder="W"></td>';
+print '</tr>';
+
+// Offices
+print '<tr>';
+print '<td><label for="pl">' . $langs->trans("NumberOfPremises") . '</label></td>';
+print '<td><input type="number" id="pl" name="params[office][pl]" min="0" step="1"></td>';
+print '</tr>';
+
+print '<tr>';
+print '<td>' . $langs->trans("PremisesSurfaceM2") . '</td>';
+print '<td><fieldset><legend class="sr-only">' . $langs->trans("PremisesSurfaceM2") . '</legend>';
+for ($i = 0; $i < 3; $i++) {
+    $id = 'surface_' . $i;
+    print '<input type="number" id="' . $id . '" 
+        name="params[office][metter][]" 
+        min="0" step="1" class="minwidth50" 
+        placeholder="mÂ²" 
+        aria-label="' . $langs->trans("PremiseSurface") . ' ' . ($i+1) . '"> ';
+}
+print '</fieldset></td>';
+print '</tr>';
+
+// Garage
+print '<tr>';
+print '<td><label for="npl">' . $langs->trans("NumberOfParkingLots") . '</label></td>';
+print '<td><input type="number" id="npl" name="params[garage][npl]" min="0" step="1"></td>';
+print '</tr>';
+
+print '<tr>';
+print '<td><label for="area">' . $langs->trans("AverageAreaPerLotM2") . '</label></td>';
+print '<td><input type="number" id="area" name="params[garage][area]" min="0" step="1" placeholder="20"></td>';
+print '</tr>';
+
+print '<tr>';
+print '<td><label for="ev">' . $langs->trans("ElectricVehicleCharger") . '</label></td>';
+print '<td><select name="params[garage][ev]" id="ev">
+<option value="">' . $langs->trans("DefaultYes") . '</option>
+<option value="1">' . $langs->trans("Yes") . '</option>
+<option value="0">' . $langs->trans("No") . '</option>
+</select></td>';
+print '</tr>';
+
+print '<tr>';
+print '<td><label for="winn">' . $langs->trans("ForcedVentilation") . '</label></td>';
+print '<td><select name="params[garage][winn]" id="winn">
+<option value="">' . $langs->trans("DefaultYes") . '</option>
+<option value="1">' . $langs->trans("Yes") . '</option>
+<option value="0">' . $langs->trans("No") . '</option>
+</select></td>';
+print '</tr>';
+
+print '</table>';
+print '</div>';
+
+print '<div class="center">';
+print '<input type="submit" class="button button-save" value="' . $langs->trans("Calculate") . '">';
+print '</div>';
+print '</form>';
+
+?>>>>file: custom/dolielec/class/actions_dolielec.class.php
+<?php
+/* Copyright (C) 2023		Laurent Destailleur			<eldy@users.sourceforge.net>
+ * Copyright (C) ---Replace with your own copyright and developer email---
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * \file    htdocs/modulebuilder/template/class/actions_mymodule.class.php
+ * \ingroup mymodule
+ * \brief   Example hook overload.
+ *
+ * TODO: Write detailed description here.
+ */
+
+require_once DOL_DOCUMENT_ROOT.'/core/class/commonhookactions.class.php';
+
+/**
+ * Class ActionsMyModule
+ */
+class ActionsDolielec extends CommonHookActions
+{
+	/**
+	 * @var DoliDB Database handler.
+	 */
+	public $db;
+
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error = '';
+
+	/**
+	 * @var string[] Errors
+	 */
+	public $errors = array();
+
+
+	/**
+	 * @var mixed[] Hook results. Propagated to $hookmanager->resArray for later reuse
+	 */
+	public $results = array();
+
+	/**
+	 * @var ?string String displayed by executeHook() immediately after return
+	 */
+	public $resprints;
+
+	/**
+	 * @var int		Priority of hook (50 is used if value is not defined)
+	 */
+	public $priority;
+
+
+	/**
+	 * Constructor
+	 *
+	 *  @param	DoliDB	$db      Database handler
+	 */
+	public function __construct($db) {
+						$this->db = $db;
+						global $langs;
+						    if (isset($langs) && is_object($langs)) {
+        $langs->loadLangs(array('main','admin','dolielec@dolielec'));
+    }
+	}
+
+
+	/**
+	 * Execute action
+	 *
+	 * @param	array<string,mixed>	$parameters	Array of parameters
+	 * @param	CommonObject		$object		The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	string				$action		'add', 'update', 'view'
+	 * @return	int								Return integer <0 if KO,
+	 *                           				=0 if OK but we want to process standard actions too,
+	 *											>0 if OK and we want to replace standard actions.
+	 */
+	public function getNomUrl($parameters, &$object, &$action)
+	{
+		global $db, $langs, $conf, $user;
+		$this->resprints = '';
+		return 0;
+	}
+
+	/**
+	 * Overload the doActions function : replacing the parent's function with the one below
+	 *
+	 * @param	array<string,mixed>	$parameters		Hook metadata (context, etc...)
+	 * @param	CommonObject		$object			The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	?string				$action			Current action (if set). Generally create or edit or null
+	 * @param	HookManager			$hookmanager	Hook manager propagated to allow calling another hook
+	 * @return	int									Return integer < 0 on error, 0 on success, 1 to replace standard code
+	 */
+	     public function formObjectOptions($parameters, &$object, &$action, $hookmanager)
+    {
+        global $langs;
+        $context = is_array($parameters['context']) ? $parameters['context'] : array();
+        if (!empty($object) && !empty($object->id) && in_array('thirdpartycard', $context) && GETPOST('tab','alpha') == 'documents') {
+                        $url = dol_buildpath('/custom/dolielec/includes/certificates.inc.php', 1).'?action=brie&socid='.$object->id;
+            print '<div class="tabBar">';
+            print '<a class="butAction" href="'.$url.'">'.$langs->trans('NewBRIE').'</a>';
+            print '</div>';
+        }
+        return 0;
+    }
+
+	public function doActions($parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs, $user;
+		$error = 0; // Error counter
+
+		/* print_r($parameters); print_r($object); echo "action: " . $action; */
+if (!empty($parameters['currentcontext']) && $parameters['currentcontext'] === 'external') {
+	if (is_object($object) && $object->element === 'ticket') {
+		$titulo = dol_strtolower($object->subject);
+		$mensaje = dol_strtolower($object->message);
+		if (preg_match('/presupuesto|instalaci[oÃ³]n/', $titulo . ' ' . $mensaje)) {
+															// Evitar mÃºltiples respuestas automÃ¡ticas
+			if (empty($object->note_private) || strpos($object->note_private, 'BIEL_AUTO_RESPONDIDO') === false) {
+								$response = "Estimado cliente, gracias por contactar. Para poder prepararte un presupuesto ajustado necesitamos estos datos:\n\n";
+				$response .= "- Nombre completo y apellidos\n";
+				$response .= "- DirecciÃ³n completa (calle, nÃºmero, pisoâ€¦)\n";
+				$response .= "- Ciudad, provincia\n";
+				$response .= "- TelÃ©fono o mÃ³vil\n";
+				$response .= "- Correo electrÃ³nico\n";
+				$response .= "- DNI, NIE o tarjeta de residencia\n";
+				$response .= "- Y si eres particular, empresa, autÃ³nomo o comunidad de vecinos\n\n";
+				$response .= "En cuanto tengamos esto, creamos la ficha y seguimos. Esto es necesario e imprescindible para darte una atenciÃ³n personalizada.";
+
+				// Crear respuesta automÃ¡tica
+				$object->addResponse($user, dol_htmlentities($response), 'Biel', '', '', 0, '', 0, '', '', 0, '', 0);
+
+
+				// Marcar como respondido
+				$object->note_private = trim($object->note_private."\n\nBIEL_AUTO_RESPONDIDO");
+				$object->update($user);
+
+				$this->resprints = ''; // no se imprime nada
+			}
+		}
+	}
+}
+
+		return 0;
+	}
+
+
+	/**
+	 * Overload the doMassActions function : replacing the parent's function with the one below
+	 *
+	 * @param	array<string,mixed>	$parameters		Hook metadata (context, etc...)
+	 * @param	CommonObject		$object			The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	?string				$action			Current action (if set). Generally create or edit or null
+	 * @param	HookManager			$hookmanager	Hook manager propagated to allow calling another hook
+	 * @return	int									Return integer < 0 on error, 0 on success, 1 to replace standard code
+	 */
+	public function doMassActions($parameters, &$object, &$action, $hookmanager)
+	{
+		global $conf, $user, $langs;
+
+		$error = 0; // Error counter
+
+		/* print_r($parameters); print_r($object); echo "action: " . $action; */
+		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {		// do something only for the context 'somecontext1' or 'somecontext2'
+			// @phan-suppress-next-line PhanPluginEmptyStatementForeachLoop
+			foreach ($parameters['toselect'] as $objectid) {
+				// Do action on each object id
+			}
+
+			if (!$error) {
+				$this->results = array('myreturn' => 999);
+				$this->resprints = 'A text to show';
+				return 0; // or return 1 to replace standard code
+			} else {
+				$this->errors[] = 'Error message';
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
+
+	/**
+	 * Overload the addMoreMassActions function : replacing the parent's function with the one below
+	 *
+	 * @param	array<string,mixed>	$parameters     Hook metadata (context, etc...)
+	 * @param	CommonObject		$object         The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	?string	$action						Current action (if set). Generally create or edit or null
+	 * @param	HookManager	$hookmanager			Hook manager propagated to allow calling another hook
+	 * @return	int									Return integer < 0 on error, 0 on success, 1 to replace standard code
+	 */
+	public function addMoreMassActions($parameters, &$object, &$action, $hookmanager)
+	{
+		global $conf, $user, $langs;
+
+		$error = 0; // Error counter
+		$disabled = 1;
+
+		/* print_r($parameters); print_r($object); echo "action: " . $action; */
+		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {		// do something only for the context 'somecontext1' or 'somecontext2'
+			$this->resprints = '<option value="0"'.($disabled ? ' disabled="disabled"' : '').'>'.$langs->trans("MyModuleMassAction").'</option>';
+		}
+
+		if (!$error) {
+			return 0; // or return 1 to replace standard code
+		} else {
+			$this->errors[] = 'Error message';
+			return -1;
+		}
+	}
+
+
+
+		/**
+	 * Execute action before PDF (document) creation
+	 *
+	 * @param	array<string,mixed>	$parameters	Array of parameters
+	 * @param	CommonObject		$object		Object output on PDF
+	 * @param	string				$action		'add', 'update', 'view'
+	 * @return	int								Return integer <0 if KO,
+	 *											=0 if OK but we want to process standard actions too,
+	 *											>0 if OK and we want to replace standard actions.
+	 */
+	public function beforePDFCreation($parameters, &$object, &$action)
+	{
+		global $conf, $user, $langs;
+		global $hookmanager;
+
+		$outputlangs = $langs;
+
+		$ret = 0;
+		$deltemp = array();
+		dol_syslog(get_class($this).'::executeHooks action='.$action);
+
+		/* print_r($parameters); print_r($object); echo "action: " . $action; */
+		// @phan-suppress-next-line PhanPluginEmptyStatementIf
+		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {
+			// do something only for the context 'somecontext1' or 'somecontext2'
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * Execute action after PDF (document) creation
+	 *
+	 * @param	array<string,mixed>	$parameters	Array of parameters
+	 * @param	CommonDocGenerator	$pdfhandler	PDF builder handler
+	 * @param	string				$action		'add', 'update', 'view'
+	 * @return	int								Return integer <0 if KO,
+	 * 											=0 if OK but we want to process standard actions too,
+	 *											>0 if OK and we want to replace standard actions.
+	 */
+	public function afterPDFCreation($parameters, &$pdfhandler, &$action)
+	{
+		global $conf, $user, $langs;
+		global $hookmanager;
+
+		$outputlangs = $langs;
+
+		$ret = 0;
+		$deltemp = array();
+		dol_syslog(get_class($this).'::executeHooks action='.$action);
+
+		/* print_r($parameters); print_r($object); echo "action: " . $action; */
+		// @phan-suppress-next-line PhanPluginEmptyStatementIf
+		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {
+			// do something only for the context 'somecontext1' or 'somecontext2'
+		}
+
+		return $ret;
+	}
+
+
+
+	/**
+	 * Overload the loadDataForCustomReports function : returns data to complete the customreport tool
+	 *
+	 * @param	array<string,mixed>	$parameters		Hook metadata (context, etc...)
+	 * @param	?string				$action 		Current action (if set). Generally create or edit or null
+	 * @param	HookManager			$hookmanager    Hook manager propagated to allow calling another hook
+	 * @return	int									Return integer < 0 on error, 0 on success, 1 to replace standard code
+	 */
+	public function loadDataForCustomReports($parameters, &$action, $hookmanager)
+	{
+		global $langs;
+
+		$langs->load("mymodule@mymodule");
+
+		$this->results = array();
+
+		$head = array();
+		$h = 0;
+
+		if ($parameters['tabfamily'] == 'mymodule') {
+			$head[$h][0] = dol_buildpath('/module/index.php', 1);
+			$head[$h][1] = $langs->trans("Home");
+			$head[$h][2] = 'home';
+			$h++;
+
+			$this->results['title'] = $langs->trans("MyModule");
+			$this->results['picto'] = 'mymodule@mymodule';
+		}
+
+		$head[$h][0] = 'customreports.php?objecttype='.$parameters['objecttype'].(empty($parameters['tabfamily']) ? '' : '&tabfamily='.$parameters['tabfamily']);
+		$head[$h][1] = $langs->trans("CustomReports");
+		$head[$h][2] = 'customreports';
+
+		$this->results['head'] = $head;
+
+		$arrayoftypes = array();
+		//$arrayoftypes['mymodule_myobject'] = array('label' => 'MyObject', 'picto'=>'myobject@mymodule', 'ObjectClassName' => 'MyObject', 'enabled' => isModEnabled('mymodule'), 'ClassPath' => "/mymodule/class/myobject.class.php", 'langs'=>'mymodule@mymodule')
+
+		$this->results['arrayoftype'] = $arrayoftypes;
+
+		return 0;
+	}
+
+
+
+	/**
+	 * Overload the restrictedArea function : check permission on an object
+	 *
+	 * @param	array<string,mixed>	$parameters		Hook metadata (context, etc...)
+	 * @param   CommonObject    	$object         The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	string				$action			Current action (if set). Generally create or edit or null
+	 * @param	HookManager			$hookmanager	Hook manager propagated to allow calling another hook
+	 * @return	int									Return integer <0 if KO,
+	 *												=0 if OK but we want to process standard actions too,
+	 *												>0 if OK and we want to replace standard actions.
+	 */
+	public function restrictedArea($parameters, $object, &$action, $hookmanager)
+	{
+		global $user;
+
+		if ($parameters['features'] == 'myobject') {
+			if ($user->hasRight('mymodule', 'myobject', 'read')) {
+				$this->results['result'] = 1;
+				return 1;
+			} else {
+				$this->results['result'] = 0;
+				return 1;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Execute action completeTabsHead
+	 *
+	 * @param	array<string,mixed>	$parameters		Array of parameters
+	 * @param	CommonObject		$object			The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	string				$action			'add', 'update', 'view'
+	 * @param	Hookmanager			$hookmanager	Hookmanager
+	 * @return	int									Return integer <0 if KO,
+	 *												=0 if OK but we want to process standard actions too,
+	 *												>0 if OK and we want to replace standard actions.
+	 */
+	public function completeTabsHead(&$parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs, $conf, $user;
+
+		if (!isset($parameters['object']->element)) {
+			return 0;
+		}
+		if ($parameters['mode'] == 'remove') {
+			// used to make some tabs removed
+			return 0;
+		} elseif ($parameters['mode'] == 'add') {
+			$langs->load('mymodule@mymodule');
+			// used when we want to add some tabs
+			$counter = count($parameters['head']);
+			$element = $parameters['object']->element;
+			$id = $parameters['object']->id;
+			// verifier le type d'onglet comme member_stats oÃ¹ Ã§a ne doit pas apparaitre
+			// if (in_array($element, ['societe', 'member', 'contrat', 'fichinter', 'project', 'propal', 'commande', 'facture', 'order_supplier', 'invoice_supplier'])) {
+			if (in_array($element, ['context1', 'context2'])) {
+				$datacount = 0;
+
+				$parameters['head'][$counter][0] = dol_buildpath('/mymodule/mymodule_tab.php', 1) . '?id=' . $id . '&amp;module='.$element;
+				$parameters['head'][$counter][1] = $langs->trans('MyModuleTab');
+				if ($datacount > 0) {
+					$parameters['head'][$counter][1] .= '<span class="badge marginleftonlyshort">' . $datacount . '</span>';
+				}
+				$parameters['head'][$counter][2] = 'mymoduleemails';
+				$counter++;
+			}
+			if ($counter > 0 && (int) DOL_VERSION < 14) {  // @phpstan-ignore-line
+				$this->results = $parameters['head'];
+				// return 1 to replace standard code
+				return 1;
+			} else {
+				// From V14 onwards, $parameters['head'] is modifiable by reference
+				return 0;
+			}
+		} else {
+			// Bad value for $parameters['mode']
+			return -1;
+		}
+	}
+
+
+	/**
+	 * Overload the showLinkToObjectBlock function : add or replace array of object linkable
+	 *
+	 * @param	array<string,mixed>	$parameters		Hook metadata (context, etc...)
+	 * @param	CommonObject		$object			The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	?string				$action			Current action (if set). Generally create or edit or null
+	 * @param	HookManager			$hookmanager	Hook manager propagated to allow calling another hook
+	 * @return	int									Return integer < 0 on error, 0 on success, 1 to replace standard code
+	 */
+	/* Add other hook methods here... */
+}
+
+>>>file: custom/dolielec/class/anthropic.class.php
+<?php
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+
+class ClaudeAI {
+    private $db;
+    private $api_key;
+    private $endpoint;
+
+    public function __construct($db) {
+        global $conf, $langs;
+        $langs->loadLangs(array('dolielec@dolielec'));
+        $this->db = $db;
+        $this->api_key = !empty($conf->global->ANTHROPIC_API_KEY) ? $conf->global->ANTHROPIC_API_KEY : getDolGlobalString('ANTHROPIC_API_KEY', '');
+        $this->endpoint = 'https://api.anthropic.com/v1/';
+    }
+
+    private function call($path, $method = 'GET', $data = null, $api = '') {
+        global $langs;
+        $api = ($api !== '') ? $api : $this->api_key;
+        if (empty($api)) {
+            return array('success' => false, 'message' => $langs->trans('MissingAPIKey'));
+        }
+        $url = $this->endpoint . ltrim($path, '/');
+        $opts = array(
+            'method' => $method,
+            'headers' => array(
+                'x-api-key: '.$api,
+                'anthropic-version: 2023-06-01',
+                'content-type: application/json'
+            ),
+            'accept_json' => 1,
+            'decode_json' => 1,
+            'timeout' => 30,
+        );
+        if ($method === 'POST' && $data !== null) {
+            $opts['body'] = $data;
+            $opts['json_body'] = 1;
+        }
+        $resp = apicall($url, $opts);
+        if (empty($resp) || empty($resp['success'])) {
+            return array(
+                'success' => false,
+                'message' => isset($resp['message']) ? $resp['message'] : $langs->trans('ConnectionFailed'),
+                'http' => isset($resp['http']) ? $resp['http'] : null,
+                'raw' => isset($resp['raw']) ? $resp['raw'] : null,
+            );
+        }
+        return array(
+            'success' => true,
+            'http' => isset($resp['http']) ? $resp['http'] : 200,
+            'json' => isset($resp['json']) ? $resp['json'] : null,
+            'raw' => isset($resp['raw']) ? $resp['raw'] : null,
+        );
+    }
+
+    public function getModels($api = '') {
+        global $langs;
+        $resp = $this->call('models', 'GET', null, $api);
+        if (empty($resp['success'])) {
+            return $resp;
+        }
+        $json = isset($resp['json']) ? $resp['json'] : null;
+        if (!is_array($json) || empty($json['data']) || !is_array($json['data'])) {
+            return array('success' => false, 'message' => $langs->trans('NoModels'), 'http' => $resp['http'] ?? null, 'raw' => $resp['raw'] ?? null);
+        }
+        $blocked_patterns = array();
+        $filtered = array();
+        foreach ($json['data'] as $m) {
+            $id = is_array($m) ? ($m['id'] ?? '') : (string)$m;
+            if ($id === '') {
+                continue;
+            }
+            $blocked = false;
+            foreach ($blocked_patterns as $pattern) {
+                if (stripos($id, $pattern) !== false) {
+                    $blocked = true;
+                    break;
+                }
+            }
+            if (!$blocked) {
+                $filtered[] = $id;
+            }
+        }
+        $filtered = array_values(array_unique($filtered));
+        if (empty($filtered)) {
+            return array('success' => false, 'message' => $langs->trans('NoModels'));
+        }
+        return array('success' => true, 'models' => $filtered);
+    }
+
+    public function setPrompt($temp = null, $top = null, $model = null, $reason = null, $maxt = null, $system = '', $user = '', $tools = null, $api = '') {
+        $api = ($api !== '') ? $api : $this->api_key;
+        $temp = ($temp !== null) ? $temp : getDolGlobalFloat('ANTHROPIC_TEMPERATURE', 1.0);
+        $model = (!empty($model)) ? $model : getDolGlobalString('ANTHROPIC_DEFAULT_MODEL');
+        $maxt = ($maxt !== null) ? $maxt : getDolGlobalInt('ANTHROPIC_MAX_TOKENS', 4096);
+                $data = array(
+            'model' => $model,
+            'max_tokens' => $maxt,
+            'system' => $system,
+            'messages' => array(array('role' => 'user', 'content' => $user))
+        );
+        
+        if (is_array($tools) && !empty($tools)) {
+            if (isset($tools['type']) || isset($tools['function'])) {
+                $tools = array($tools);
+            }
+            $data['tools'] = $tools;
+            $data['tool_choice'] = 'auto';
+        }
+        
+        if ($temp !== null) {
+            $data['temperature'] = $temp;
+        }
+        if ($top !== null) {
+            $data['top_p'] = $top;
+        }
+        
+        $resp = $this->call('messages', 'POST', $data, $api);
+        return $resp;
+    }
+
+}>>>file: custom/dolielec/class/doc.class.php
+<?php
+// custom/dolielec/class/doc.class.php
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
+
+class Documentation {
+	private $db;
+
+	public function __construct($db) {
+		global $langs;
+		$langs->loadLangs(array('main','companies','dolielec@dolielec'));
+		$this->db = $db;
+	}
+
+	/**
+	 * Devuelve info de la empresa instaladora / firmante (mysoc + user si procede)
+	 * @return array
+	 */
+	public function getInst() {
+		global $mysoc, $user;
+		$out = array(
+			'type'      => 'company',
+			'display'   => $mysoc->name,
+			'nif'       => $mysoc->idprof1,
+			'rasic'     => $mysoc->idprof4,
+			'firstname' => '',
+			'lastname'  => '',
+			'niftech'   => ''
+		);
+		if (!empty($user->firstname) || !empty($user->lastname)) {
+			$out['type']      = 'person';
+			$out['firstname'] = $user->firstname;
+			$out['lastname']  = $user->lastname;
+			$out['display']   = trim(($user->firstname!=''?$user->firstname.' ':'').$user->lastname);
+			$out['niftech']   = $user->user_mobile ? $user->user_mobile : '';
+		}
+		return $out;
+	}
+
+	/**
+	 * Construye array de datos para BRIE a partir del form y un tercero opcional
+	 * @param array $form
+	 * @param int   $socid
+	 * @return array
+	 */
+	public function setBrie($form, $socid) {
+		global $db, $conf;
+
+		$data = is_array($form) ? $form : array();
+
+		if (!empty($socid)) {
+			$soc = new Societe($db);
+			if ($soc->fetch($socid) > 0) {
+				if (empty($data['TIT_NOMBRE']))    $data['TIT_NOMBRE']   = $soc->name;
+				if (empty($data['TIT_NIF']))       $data['TIT_NIF']      = $soc->idprof1;
+				if (empty($data['TIT_TLF']))       $data['TIT_TLF']      = $soc->phone;
+				if (empty($data['TIT_DOM']))       $data['TIT_DOM']      = $soc->address;
+				if (empty($data['TIT_CP']))        $data['TIT_CP']       = $soc->zip;
+				if (empty($data['TIT_LOCALIDAD'])) $data['TIT_LOCALIDAD']= $soc->town;
+			}
+		}
+
+		// defaults mínimos
+		if (empty($data['BRIE_FECHA'])) $data['BRIE_FECHA'] = dol_print_date(dol_now(), '%Y-%m-%d');
+		if (!isset($data['ASCENSOR'])) $data['ASCENSOR'] = 'NO';
+		if (!isset($data['TIERRA_EXISTE'])) $data['TIERRA_EXISTE'] = 'NO';
+		if (!isset($data['AISLAMIENTO'])) $data['AISLAMIENTO'] = 'NO';
+
+		return $data;
+	}
+
+	/**
+	 * Genera un ODT a partir de una plantilla.
+	 * Aquí no inventamos motor: si no tienes sustitución de marcadores, se copia tal cual.
+	 * @param string $template Ruta a la plantilla .odt
+	 * @param string $output   Ruta al ODT de salida
+	 * @param array  $data     Datos del formulario (si conectas un motor, úsalo aquí)
+	 * @return array ['success'=>bool,'file'=>string|false,'message'=>string]
+	 */
+	public function renderODT($template, $output, $data=array()) {
+		global $langs;
+		$dir = dirname($output);
+		if (!is_dir($dir)) dol_mkdir($dir);
+		if (!is_readable($template)) {
+			return array('success'=>false,'file'=>false,'message'=>$langs->trans('TemplateNotFound'));
+		}
+
+		// TODO: conectar tu motor ODT si lo tienes (TBS/OpenDocument). Por ahora, copia simple.
+		if (!dol_copy($template, $output, 0, 1)) {
+			return array('success'=>false,'file'=>false,'message'=>'CopyFail');
+		}
+		return array('success'=>true,'file'=>$output,'message'=>'OK');
+	}
+
+	/**
+	 * Convierte ODT?PDF usando soffice/unoconv si están disponibles
+	 * @param string $odt
+	 * @param string $pdf
+	 * @return array
+	 */
+	public function odtToPdf($odt, $pdf) {
+		if (!is_readable($odt)) return array('success'=>false,'file'=>false,'message'=>'ODTMissing');
+
+		if (file_exists($pdf)) @unlink($pdf);
+
+		global $conf;
+
+		$bin = !empty($conf->global->MAIN_PATH_SOFFICE) ? $conf->global->MAIN_PATH_SOFFICE : '';
+		if ($bin == '') $bin = trim(@shell_exec('command -v soffice 2>/dev/null'));
+		if ($bin != '') {
+			$cmd = escapeshellcmd($bin).' --headless --convert-to pdf --outdir '.escapeshellarg(dirname($pdf)).' '.escapeshellarg($odt).' 2>/dev/null';
+			@shell_exec($cmd);
+			if (is_readable($pdf)) return array('success'=>true,'file'=>$pdf,'message'=>'OK');
+		}
+
+		$unoconv = trim(@shell_exec('command -v unoconv 2>/dev/null'));
+		if ($unoconv != '') {
+			$cmd = escapeshellcmd($unoconv).' -f pdf -o '.escapeshellarg($pdf).' '.escapeshellarg($odt).' 2>/dev/null';
+			@shell_exec($cmd);
+			if (is_readable($pdf)) return array('success'=>true,'file'=>$pdf,'message'=>'OK');
+		}
+
+		return array('success'=>false,'file'=>false,'message'=>'NoConverter');
+	}
+
+	/**
+	 * Firma un PDF. Si no hay firmador configurado, copia tal cual.
+	 * Puedes definir DOLIELEC_CERT_FILE, DOLIELEC_CERT_PASS y/o DOLIELEC_SIGN_CMD.
+	 * SIGN_CMD admite tokens: %in %out %cert %pass
+	 * @param string $srcPdf
+	 * @param string $destPdf
+	 * @return bool
+	 */
+	public function setSign($srcPdf, $destPdf) {
+		global $conf;
+
+		$dir = dirname($destPdf);
+		if (!is_dir($dir)) dol_mkdir($dir);
+
+		$cert = !empty($conf->global->DOLIELEC_CERT_FILE) ? $conf->global->DOLIELEC_CERT_FILE : '';
+		$pass = !empty($conf->global->DOLIELEC_CERT_PASS) ? $conf->global->DOLIELEC_CERT_PASS : '';
+		$cmdt = !empty($conf->global->DOLIELEC_SIGN_CMD) ? $conf->global->DOLIELEC_SIGN_CMD : '';
+
+		// ruta rápida: comando externo si está definido
+		if ($cmdt != '') {
+			$cmd = strtr($cmdt, array(
+				'%in'   => escapeshellarg($srcPdf),
+				'%out'  => escapeshellarg($destPdf),
+				'%cert' => escapeshellarg($cert),
+				'%pass' => escapeshellarg($pass)
+			));
+			@shell_exec($cmd.' 2>/dev/null');
+			return is_readable($destPdf);
+		}
+
+		// fallback: sin firmar (copia)
+		if (!dol_copy($srcPdf, $destPdf, 0, 1)) return false;
+		return true;
+	}
+
+	/**
+	 * Adjunta un fichero al ECM del tercero
+	 * @param int    $socid
+	 * @param string $absfile
+	 * @return string Ruta destino o '' si falla
+	 */
+	public function attachToThirdparty($socid, $absfile) {
+		global $conf, $db;
+
+		$soc = new Societe($db);
+		if ($soc->fetch($socid) <= 0) return '';
+
+		$upload_dir = $conf->societe->dir_output.'/'.$soc->id.'/documents';
+		if (!is_dir($upload_dir)) dol_mkdir($upload_dir);
+
+		$dest = $upload_dir.'/'.basename($absfile);
+		if (!dol_copy($absfile, $dest, 0, 1)) return '';
+
+		return $dest;
+	}
+}
+
+>>>file: custom/dolielec/class/geoloc.class.php
+<?php
+/**
+ *  DoliElec - GeolocalizaciÃ³n y Costes de desplazamiento
+ *  @package    dolielec
+ */
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+class Geoloc {
+    private $db;
+    private $endpoint;
+    private $key;
+    private $provider;
+    public function __construct($db) {
+        global $conf, $langs;
+		$langs->loadLangs(array('dolielec@dolielec'));
+        $this->db = $db;
+        $this->key = !empty($GLOBALS['conf']->global->DOLIELEC_GEO_API_KEY) ? $GLOBALS['conf']->global->DOLIELEC_GEO_API_KEY : null;
+        $this->provider = $conf->global->DOLIELEC_GEO_PROVIDER ?? '';
+        $this->endpoint = '';
+        if ($this->provider === 'google') {
+            $this->endpoint = 'https://maps.googleapis.com/maps/api/directions/json';
+        }
+        if ($this->provider === 'ors') {
+            $this->endpoint = 'https://api.openrouteservice.org/';
+        }
+    }
+
+    private function call($path, $method = 'GET', $data = null) {
+        global $langs;
+        if (empty($this->key)) {
+            return array('success' => false, 'message' => $langs->trans('MissingAPIKey'));
+        }
+        if (empty($this->provider)) {
+            return array('success' => false, 'message' => $langs->trans('NoAPIProviderConfigured'));
+        }
+
+        $url = $this->endpoint;
+        $opts = array(
+            'method' => $method,
+            'timeout' => 25,
+            'accept_json' => 1,
+            'decode_json' => 1,
+        );
+
+        if ($this->provider === 'google') {
+            $url .= $path . (strpos($path, '?') === false ? '?' : '&') . 'key=' . rawurlencode($this->key);
+        } elseif ($this->provider === 'ors') {
+            $url .= ltrim($path, '/');
+            $opts['bearer'] = $key;
+            $opts['headers'] = array('Content-Type: application/json');
+        } else {
+            return array('success' => false, 'message' => $langs->trans('UnsupportedAPIProvider'));
+        }
+
+        if ($method === 'POST' && $data !== null) {
+            $opts['body'] = $data;
+            $opts['json_body'] = 1;
+        }
+
+        return apicall($url, $opts);
+    }
+
+    //geting the operational base address
+    public function getAddrBase($origin = null): array {
+        if ($origin === null) {
+            global $mysoc;
+            $origin = $mysoc ?? null;
+        }        if (empty($origin)) {
+            return array();
+        }
+        $address = (string)($origin->address ?? '');
+        $zip = (string)($origin->zip ?? '');
+        $town = (string)($origin->town ?? '');
+        $state = (string)($origin->state ?? '');
+        $country = (string)($origin->country_code ?? $origin->country ?? '');
+        $build_address = array_filter(array($address, $zip, $town, $state, $country));
+        $line = implode(', ', $build_address);
+        return array('line' => $line);
+    }
+    //checking if is client thirdparty
+    public function isClient($check = null): bool {
+        if ($check === null) {
+            global $object;
+            $check = $object ?? null;
+        }
+        if (empty($check) || !isset($check->client)) {
+            return false;
+        }
+        return ((int)$check->client === 1);
+    }
+
+    //get the client address and format it a line to API invoque
+    public function getAddr($loc = null): array {
+        if ($loc === null) {
+            global $object;
+            $loc = $object;
+        }
+        if (empty($loc)) {
+            return array();
+        }
+        $address = (string)($loc->address ?? '');
+        $zip = (string)($loc->zip ?? '');
+        $town = (string)($loc->town ?? '');
+        $state = (string)($loc->state ?? '');
+        $fk_departement = isset($loc->fk_departement) ? (int)$loc->fk_departement : (isset($loc->state_id) ? (int)$loc->state_id : null);
+        $fk_pays = isset($loc->fk_pays) ? (int)$loc->fk_pays : (isset($loc->country_code) ? (int)$loc->country_code : null);
+        $country_code = (string)($loc->country_code ?? '');
+        $country = (string)($loc->country ?? '');
+        $build_address = array_filter(array($address, $zip, $town, $state, $country));
+        $line = implode(', ', $build_address);
+        return array('line' => $line);
+    }
+
+    //geting the mode (or modes) for traveling
+    public function getTravelMode($mode = null): array {
+        $modes = array();
+        if (getDolGlobalInt('DOLIELEC_MODE_DRIVE', 0) === 1) $modes[] = 'driving';
+        if (getDolGlobalInt('DOLIELEC_MODE_FOOT', 0) === 1) $modes[] = 'walking';
+        if (getDolGlobalInt('DOLIELEC_MODE_TRANSIT_TRAIN', 0) === 1) $modes[] = 'train';
+        if (getDolGlobalInt('DOLIELEC_MODE_TRANSIT_BUS', 0) === 1) $modes[] = 'bus';
+        if (getDolGlobalInt('DOLIELEC_MODE_TRANSIT_METRO', 0) === 1) $modes[] = 'metro';
+        if (getDolGlobalInt('DOLIELEC_MODE_BIKE', 0) === 1) $modes[] = 'bicycle';
+        if ($mode !== null) {
+            return in_array($mode, $modes, true) ? array($mode) : array();
+        }
+        return $modes;
+    }
+
+    //geting avoids to make routes
+    public function getTravelAvoids($avoid = null): array {
+        $avoids = array();
+        if (getDolGlobalInt('DOLIELEC_GEO_AVOID_HIGHWAYS', 0) === 1) $avoids[] = 'highways';
+        if (getDolGlobalInt('DOLIELEC_AVOID_TOLLS', 0) === 1) $avoids[] = 'tolls';
+        if (getDolGlobalInt('DOLIELEC_AVOID_FERRIES', 0) === 1) $avoids[] = 'ferries';
+        if (getDolGlobalInt('DOLIELEC_AVOID_STAIRS', 0) === 1) $avoids[] = 'stairs';
+        if (getDolGlobalInt('DOLIELEC_AVOID_HILLS', 0) === 1) $avoids[] = 'hills';
+        if (getDolGlobalInt('DOLIELEC_AVOID_CROWDS', 0) === 1) $avoids[] = 'crowds';
+        if (getDolGlobalInt('DOLIELEC_AVOID_FORDS', 0) === 1) $avoids[] = 'fords';
+        if ($avoid !== null) {
+            return in_array($avoid, $avoids, true) ? array($avoid) : array();
+        }
+        return $avoids;
+    }
+    public function getCost(): array {
+        global $langs;
+
+        $provider = $this->provider;
+        if ($provider !== 'google' && $provider !== 'ors') {
+            return array('success' => false, 'message' => $langs->trans('NoAPIProviderConfigured'));
+        }
+
+        $data = ($provider === 'google') ? $this->google() : $this->ors();
+        if (empty($data['success'])) {
+            return $data;
+        }
+
+        $dist_km = (float) ($data['distance_km'] ?? 0);
+        $cost_km = (float) getDolGlobalString('DOLIELEC_GEO_COST_KM');
+
+        if ($dist_km <= 0 || $cost_km <= 0) {
+            return array(
+                'success' => false,
+                'message' => $langs->trans('InvalidDistanceOrCost'),
+                'distance_km' => $dist_km,
+                'cost_km' => $cost_km
+            );
+        }
+
+        $total = price2num($dist_km * $cost_km * 2, 2); // ida y vuelta
+        $data['cost_eur'] = $total;
+
+        return $data;
+    }
+
+    /**
+     * Guardar coste de desplazamiento en el cliente
+     */
+    public function setToClient($client, array $data): array {
+        global $langs;
+
+        if (!$this->isClient($client)) {
+            return array('success' => false, 'message' => $langs->trans('NotAClientObject'));
+        }
+
+  
