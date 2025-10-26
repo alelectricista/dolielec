@@ -30,7 +30,8 @@ class Geoloc {
 
     private function call($path, $method = 'GET', $data = null) {
         global $langs;
-        if (empty($this->key)) {
+		$key = ($key !== '') ? $key : $this->key;
+        if (empty($key)) {
             return array('success' => false, 'message' => $langs->trans('MissingAPIKey'));
         }
         if (empty($this->provider)) {

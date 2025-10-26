@@ -31,10 +31,7 @@ public function __construct($db) {
 						$openai = new OpenAI($this->db);
 			$product = new Product ($this->db);
 			$pf = new ProductFournisseur($this->db);
-						if(empty($api_key)) {
-				return array('success' => false, 'message' => $langs->trans('MissingAPIKey'));
-			}
-			if(empty($ref_supplier)) {
+									if(empty($ref_supplier)) {
 				return array('success' => false, 'message' => $langs->trans('MissingSupplier'));
 			}
 			if(empty($fourn_pu) || $fourn_pu < 0) {
@@ -48,24 +45,30 @@ public function __construct($db) {
 	return array('success' => false, 'message' => $langs->trans('ProductNotFound'));
 }
 $cleanPrice = price2num($fourn_pu, 2);
-						$rsystem= 'Eres Biel, un comercial y contable experto en el mercado del sector eléctrico. Tu misión es calcular el precio de venta más óptimo con la máxima rentabilidad neutralizando cualquier tipo de competencia. Debes buscar el fabricante y el precio de venta recomendado y el precio de venta al público según la referencia del fabricante dada.';
+						$rsystem= 'Eres Biel, un agresivo comercial y contable experto en el mercado del sector eléctrico. Tu misión es calcular el precio de venta más óptimo con la máxima rentabilidad neutralizando cualquier tipo de competencia. Debes buscar el fabricante, el precio de venta recomendado y el precio de venta al público según la referencia del fabricante dada.';
 			$ruser = 'calcula el mejor precio de venta para  el producto con Referencia '.$ref_supplier.' que tiene un precio unitario de '.$cleanPrice.'. Debes analizar el mercado en profundidad, revisando: Grandes superficies como leroy merlin, obramat, amazon, aliexpress, etc; pequeñas superficies como bazares, ferreterías de barrio; y devolver un  precio que garantice ganancias, rentabilidad y el mayor margen posible, neutralizando cualquier tipo de competencia; según lo indicado. Debes devolver un json válido y la respuesta debe estar formada por solo números. Debe tener una forma como esta: {"price":valor}';
 			try {
-			$data = $openai->setPrompt(0.0, 0.9, 'gpt5-thinking', '', 800, $rsystem, $ruser, $api_key);
+			$data = $openai->setPrompt(0.5, 0.9, 'gpt-5', null, 800, $rsystem, $ruser, $api);
 			}
 			catch(Exception $e) {
 				return array('success' => false, 'message' => $langs->trans('OpenAIError').': '.$e->getMessage());
 			}
-						$decode = json_decode($data, true);
+			if(empty($data['json']['choice'][0]['message']['content'])) {
+				return array('success' => false, 'message' => $data['message' ?? $langs->trans('EmptyResponse'));
+			}
+			$content = trim($data['json']['choice'][0]['message']['content']);
+			        $content = preg_replace('/```json\s*|\s*```/', '', $content);
+									$decode = json_decode($content, true);
 						if(!$decode || !isset($decode['price'])) {
+							            dol_syslog(__METHOD__.': Invalid JSON response: '.$content, LOG_WARNING);
 															return array('success' => false, 'message' => $langs->trans('ResponseInvalid'));
 			}
 			$price = price2num($decode['price'], 2);
 						if ($price < 0) {
-				return array('success' => false, 'message' => $langs->trans('PriceInvalid'));
+							            				return array('success' => false, 'message' => $langs->trans('PriceInvalid'));
 			}
 						$update = $product->updatePrice($price, 'HT', $user, 0, 0, 0);
-			if ($update >= 0) {
+			if ($update > 0) {
 				return array('success' => true, 'message' => $langs->trans('PriceUpdated'));
 			}
 			else {

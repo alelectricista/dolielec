@@ -89,7 +89,7 @@ $top = (!empty($top) && $top !== null) ? $top : getDolGlobalFloat('OPENAI_TOP_P'
 $model = (!empty($model)) ? $model : getDolGlobalString('OPENAI_DEFAULT_MODEL');
 $reason = (!empty($reason)) ? $reason : 'medium';
 $maxt = (!empty($maxt) && $maxt !== null) ? $maxt : getDolGlobalInt('OPENAI_MAX_TOKENS');
-														$data = array('temperature' => $temp, 'top_p' => $top, 'model' => $model, 'max_output_tokens' => $maxt, 'messages' => array(array('role' => 'system', 'content' => $system), array('role' => 'user', 'content' => $user)));
+														$data = array('temperature' => $temp, 'top_p' => $top, 'model' => $model, 'max_tokens' => $maxt, 'messages' => array(array('role' => 'system', 'content' => $system), array('role' => 'user', 'content' => $user)));
 				if(is_array($tools) && !empty($tools)) {
 					if(isset($tools['type']) || isset($tools['function'])) {
 						$tools = array($tools);
@@ -98,6 +98,8 @@ $maxt = (!empty($maxt) && $maxt !== null) ? $maxt : getDolGlobalInt('OPENAI_MAX_
 			$data['tool_choice'] = 'auto';
 		}
 		if(stripos($model, 'o1') !== false || stripos($model, 'o1pro') !== false || stripos($model, 'o3') !== false) {
+			unset($data['temperature']);
+			unset($data['top_p']);
 			$data['reasoning_effort'] = $reason;
 		}
 		$resp = $this->call('chat/completions', 'POST', $data, $api);

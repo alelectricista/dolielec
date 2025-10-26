@@ -1,18 +1,4 @@
- ?>");
-
-Â  Â  Â  Â  Â  Â  }
-
-Â  Â  Â  Â  });
-
-Â  Â  });
-
-});
-
->>>file: custom/dolielec/js/openai.js.php
-<?php
-$res = 0;
-if (! $res && file_exists("../../main.inc.php")) $res = @include("../../main.inc.php");
-if (! $res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
+/../main.inc.php");
 if (! $res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
 if (! $res) die("Include of main fails");
 
@@ -24,135 +10,135 @@ $langs->load("dolielec@dolielec");
 
 jQuery(document).ready(function($) {
 if (!$('#openai_api_key').length) return;
-// BotÃ³n: comprobar conexiÃ³n
+// Botón: comprobar conexión
 
-Â  Â  $('#openai_check_api').click(function(e) {
+    $('#openai_check_api').click(function(e) {
 
-Â  Â  Â  Â  e.preventDefault();
+        e.preventDefault();
 
-Â  Â  Â  Â  let api_key = $('#openai_api_key').val();
+        let api_key = $('#openai_api_key').val();
 
-Â  Â  Â  Â  if (!api_key || api_key.trim() === '') {
+        if (!api_key || api_key.trim() === '') {
 
-Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
+            alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
 
-Â  Â  Â  Â  Â  Â  return;
+            return;
 
-Â  Â  Â  Â  }
+        }
 
-Â  Â  Â  Â  $.ajax({
+        $.ajax({
 
-Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+            url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
 
-Â  Â  Â  Â  Â  Â  method: "POST",
+            method: "POST",
 
-Â  Â  Â  Â  Â  Â  dataType: "json",
+            dataType: "json",
 
-Â  Â  Â  Â  Â  Â  data: {
+            data: {
 
-Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_conn",
+                action: "check_api_conn",
 
-Â  Â  Â  Â  Â  Â  Â  Â  api_key: api_key
+                api_key: api_key
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  success: function(response) {
+            success: function(response) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  if (response.success) {
+                if (response.success) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.models && Array.isArray(response.models)) {
+                    if (response.models && Array.isArray(response.models)) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  let $modelSelect = $('#openai_model');
+                        let $modelSelect = $('#openai_model');
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.empty();
+                        $modelSelect.empty();
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  response.models.forEach(function(model) {
+                        response.models.forEach(function(model) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.append($('<option>', {
+                            $modelSelect.append($('<option>', {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  value: model,
+                                value: model,
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  text: model
+                                text: model
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }));
+                            }));
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  });
+                        });
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.default_model) {
+                        if (response.default_model) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.val(response.default_model);
+                            $modelSelect.val(response.default_model);
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+                        }
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
+                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                    } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
+                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+                    }
 
-Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  }
+                }
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+            error: function(xhr, status, error) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
 
-Â  Â  Â  Â  Â  Â  }
+            }
 
-Â  Â  Â  Â  });
+        });
 
-Â  Â  });
+    });
 
-Â  Â  // BotÃ³n: comprobar saldo
+    // Botón: comprobar saldo
 
-Â  Â  $('#check_api_balance').click(function(e) {
+    $('#check_api_balance').click(function(e) {
 
-Â  Â  Â  Â  e.preventDefault();
+        e.preventDefault();
 
-Â  Â  Â  Â  $.ajax({
+        $.ajax({
 
-Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+            url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
 
-Â  Â  Â  Â  Â  Â  method: "POST",
+            method: "POST",
 
-Â  Â  Â  Â  Â  Â  dataType: "json",
+            dataType: "json",
 
-Â  Â  Â  Â  Â  Â  data: {
+            data: {
 
-Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_balance"
+                action: "check_api_balance"
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  success: function(response) {
+            success: function(response) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  if (response.success && typeof response.saldo_eur !== "undefined") {
+                if (response.success && typeof response.saldo_eur !== "undefined") {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " â‚¬");
+                    alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " €");
 
-Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  }
+                }
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+            error: function(xhr, status, error) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
 
-Â  Â  Â  Â  Â  Â  }
+            }
 
-Â  Â  Â  Â  });
+        });
 
-Â  Â  });
+    });
 
 });
 
@@ -391,7 +377,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/geturl.lib.php';
 require_once 'calculate.lib.php';
 // dolielec.lib.php - Funciones utilitarias para Biel y Dolielec (accesibilidad bloque 17)
-//gestionar pestaÃ±as
+//gestionar pestañas
 function dolielecTabsConfig () {
 	return array(
 	'openai' => array('OpenaiSettings', 'openai.php'),
@@ -466,7 +452,7 @@ function dolielec_get_biel_greeting()
     $id = dolielec_get_biel_identity();
     foreach (preg_split('/\R/', $id) as $l) {
         $t = trim($l);
-        if ($t === '' || preg_match('/^(===|tÃ­tulo\\s*:)/i', $t)) continue;
+        if ($t === '' || preg_match('/^(===|título\\s*:)/i', $t)) continue;
         if (stripos($t, 'soy biel') !== false) return $t;
         return $t;
     }
@@ -475,12 +461,12 @@ function dolielec_get_biel_greeting()
 
 
 /**
- * Render accesible (WCAG 2.2 AA) para markdown bÃ¡sico.
- * Soporta: tÃ­tulos "=== BLOQUE X ===" -> h2, "tÃ­tulo:" -> h3, listas "- ", **negritas**, `code`,
- * enlaces [txt](url), imÃ¡genes ![alt](src). Incluye landmarks y respeta sr-only/skip-link via CSS.
+ * Render accesible (WCAG 2.2 AA) para markdown básico.
+ * Soporta: títulos "=== BLOQUE X ===" -> h2, "título:" -> h3, listas "- ", **negritas**, `code`,
+ * enlaces [txt](url), imágenes ![alt](src). Incluye landmarks y respeta sr-only/skip-link via CSS.
  *
  * @param string $raw Markdown plano
- * @param string $pageTitle TÃ­tulo accesible de la pÃ¡gina
+ * @param string $pageTitle Título accesible de la página
  * @return string HTML seguro
  */
 function dolielec_md_render_accessible($raw, $pageTitle = 'Identidad de Biel')
@@ -490,8 +476,8 @@ function dolielec_md_render_accessible($raw, $pageTitle = 'Identidad de Biel')
     $lines = explode("\n", $raw);
     $html = '';
 
-    // Wrapper semÃ¡ntico. Las clases se definen en css/dolielec.css.php
-    $html .= '<a class="skip-link" href="#main-content">'.htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').' â€“ Saltar al contenido</a>';
+    // Wrapper semántico. Las clases se definen en css/dolielec.css.php
+    $html .= '<a class="skip-link" href="#main-content">'.htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').' – Saltar al contenido</a>';
     $html .= '<main id="main-content" role="main" tabindex="-1" aria-labelledby="page-title" class="biel-identity" lang="es">';
     $html .= '<h1 id="page-title" class="visually-hidden">'.htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</h1>';
 
@@ -507,8 +493,8 @@ function dolielec_md_render_accessible($raw, $pageTitle = 'Identidad de Biel')
             $html .= '<h2>'.htmlspecialchars($t, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')."</h2>\n";
             continue;
         }
-        // H3 por "tÃ­tulo: x"
-        if (preg_match('/^t[iÃ­]tulo\s*:\s*(.+)$/i', $t, $m)) {
+        // H3 por "título: x"
+        if (preg_match('/^t[ií]tulo\s*:\s*(.+)$/i', $t, $m)) {
             if ($in_list) { $html .= "</ul>\n"; $in_list = false; }
             $html .= '<h3>'.htmlspecialchars($m[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')."</h3>\n";
             continue;
@@ -531,14 +517,14 @@ function dolielec_md_render_accessible($raw, $pageTitle = 'Identidad de Biel')
                 $href = dolielec_sanitize_url($mm[2]);
                 return '<a href="'.$href.'">'.$txt.'</a>';
             }, $item);
-            // CÃ³digo y negritas
+            // Código y negritas
             $item = preg_replace('/`(.+?)`/s', '<code>$1</code>', $item);
             $item = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $item);
             $item = htmlspecialchars_decode(htmlspecialchars($item, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
             $html .= "<li>$item</li>\n";
             continue;
         }
-        // PÃ¡rrafo
+        // Párrafo
         $p = $t;
         $p = preg_replace_callback('/\[(.+?)\]\((.+?)\)/', function($mm){
             $txt = htmlspecialchars($mm[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -556,7 +542,7 @@ function dolielec_md_render_accessible($raw, $pageTitle = 'Identidad de Biel')
 }
 
 /**
- * Sanitiza URL a http(s)/mailto Ãºnicamente (para renderer accesible).
+ * Sanitiza URL a http(s)/mailto únicamente (para renderer accesible).
  */
 function dolielec_sanitize_url($url) {
     $url = trim($url);
@@ -568,7 +554,7 @@ function dolielec_sanitize_url($url) {
 //calling to apis
 /**
  * Llamada HTTP (GET / POST / PUT / PATCH / HEAD) usando getURLContent() de Dolibarr 22.
- * Devuelve un array estÃ¡ndar:
+ * Devuelve un array estándar:
  *   [ 'success'=>bool, 'http'=>int|null, 'json'=>mixed|null, 'raw'=>string|null, 'message'=>string|null ]
  *
  * @param string $url
@@ -611,7 +597,7 @@ function apicall($url, $opts = array())
         foreach ($headers_in as $h) $headers[] = $h;
     }
 
-    // ----- Cuerpo para mÃ©todos con payload ------------------------------------
+    // ----- Cuerpo para métodos con payload ------------------------------------
     $post_data = '';
     if (in_array($method, array('POST','PUT','PATCH'))) {
         if ($body !== null) {
@@ -707,7 +693,7 @@ if ($save_to !== '') {
             'success' => false,
             'http'    => $http,
             'json'    => null,
-            'raw'     => (dol_strlen($raw) > 512 ? dol_substr($raw,0,512).'â€¦' : $raw),
+            'raw'     => (dol_strlen($raw) > 512 ? dol_substr($raw,0,512).'…' : $raw),
 			'content_type' => $ctype,
             'message' => 'InvalidJSONResponse'
         );
@@ -737,7 +723,7 @@ ctx MEDIUMTEXT not null,
 tms timestamp not null default current_timestamp on update current_timestamp,
 unique key BlockLearningID(fk_blockid, fk_sublock))
 engine=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
--- frases para relaciÃ³n psicolÃ³gica orientada
+-- frases para relación psicológica orientada
 create table if not exists llx_dolielec_rpo (
 rowid integer AUTO_INCREMENT primary key,
 entity integer not null default 1,
@@ -811,47 +797,4 @@ $js = '/custom/dolielec/js/dolielec.js.php';
 echo "\n<script type=\"text/javascript\" src=\"".dol_buildpath($js,1)."\"></script>\n";
 dol_fiche_end();
 llxFooter();
-
-?>>>>file: custom/dolielec/css/dolielec.css.php
-<?php
-// dolielec.css.php - CSS accesible para el mÃ³dulo Dolielec (bloque 17)
-header("Content-type: text/css");
-
-// Estilo para el asterisco de campo obligatorio
 ?>
-.fieldrequired {
-    color: #B00020; /* Alto contraste rojo */
-    font-weight: bold;
-    margin-right: 5px;
-    font-size: 1.1em;
-}
-input[required], select[required], textarea[required] {
-    border-left: 4px solid #B00020;
-}
-input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
-    outline: 3px solid #005fcc;
-    outline-offset: 2px;
-}
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0,0,0,0);
-    white-space: nowrap;
-    border: 0;
-}
-
-/* === Accesibilidad â€“ helpers comunes === */
-.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
-.skip-link:focus{position:static;width:auto;height:auto;display:inline-block;padding:.5rem 1rem;border:2px solid currentColor;border-radius:.2rem;background:transparent}
-.biel-identity{max-width:70ch;line-height:1.6}
-.biel-identity a{text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px}
-.biel-identity a:focus-visible{outline:3px solid currentColor;outline-offset:3px;border-radius:.2rem}
-.biel-identity h2,.biel-identity h3{margin:1rem 0 .25rem 0}
-.biel-identity ul{padding-left:1.25rem}
-.biel-identity li{margin:.25rem 0}
-.biel-identity code{padding:.1rem .3rem;border:1px solid #888;border-radius:.2rem}
-@media (max-width: 360px){ .biel-identity{max-width:100%;word-break:break-word;overflow-wrap:anywhere} }

@@ -1,9 +1,4 @@
-PPLIER_CREATE':
-			//case 'LINEORDER_SUPPLIER_MODIFY':
-			//case 'LINEORDER_SUPPLIER_DELETE':
-
-			// Proposals
-			//case 'PROPAL_CREATE':
+//case 'PROPAL_CREATE':
 			//case 'PROPAL_MODIFY':
 			//case 'PROPAL_VALIDATE':
 			//case 'PROPAL_SENTBYMAIL':
@@ -201,11 +196,11 @@ class InterfaceProfitTriggers extends DolibarrTriggers {
         $buyPriceHT = isset($object->fourn_price) ? $object->fourn_price : (isset($object->fourn_pu) ? $object->fourn_pu : 0);
         
         if (empty($refSupplier)) {
-            dol_syslog(__METHOD__.': ref_supplier vacÃ­o, abortando', LOG_WARNING);
+            dol_syslog(__METHOD__.': ref_supplier vacío, abortando', LOG_WARNING);
             return 0;
         }
         if ($buyPriceHT <= 0) {
-            dol_syslog(__METHOD__.': Precio compra invÃ¡lido, abortando', LOG_WARNING);
+            dol_syslog(__METHOD__.': Precio compra inválido, abortando', LOG_WARNING);
             return 0;
         }
                 $profit = new Profit($this->db);
@@ -214,11 +209,55 @@ class InterfaceProfitTriggers extends DolibarrTriggers {
             dol_syslog(__METHOD__.': Profit->getPrice KO: '.$result['message'], LOG_WARNING);
             return -1;
         }
-             dol_syslog(__METHOD__.': Precio calculado automÃ¡ticamente: '.$result['price'].' EUR', LOG_INFO);
+             dol_syslog(__METHOD__.': Precio calculado automáticamente: '.$result['price'].' EUR', LOG_INFO);
         return 0;
     }
 
-}>>>file: custom/dolielec/includes/certificates.inc.php
+}>>>file: custom/dolielec/css/dolielec.css.php
+<?php
+// dolielec.css.php - CSS accesible para el módulo Dolielec (bloque 17)
+header("Content-type: text/css");
+
+// Estilo para el asterisco de campo obligatorio
+?>
+.fieldrequired {
+    color: #B00020; /* Alto contraste rojo */
+    font-weight: bold;
+    margin-right: 5px;
+    font-size: 1.1em;
+}
+input[required], select[required], textarea[required] {
+    border-left: 4px solid #B00020;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 3px solid #005fcc;
+    outline-offset: 2px;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* === Accesibilidad – helpers comunes === */
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{position:static;width:auto;height:auto;display:inline-block;padding:.5rem 1rem;border:2px solid currentColor;border-radius:.2rem;background:transparent}
+.biel-identity{max-width:70ch;line-height:1.6}
+.biel-identity a{text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px}
+.biel-identity a:focus-visible{outline:3px solid currentColor;outline-offset:3px;border-radius:.2rem}
+.biel-identity h2,.biel-identity h3{margin:1rem 0 .25rem 0}
+.biel-identity ul{padding-left:1.25rem}
+.biel-identity li{margin:.25rem 0}
+.biel-identity code{padding:.1rem .3rem;border:1px solid #888;border-radius:.2rem}
+@media (max-width: 360px){ .biel-identity{max-width:100%;word-break:break-word;overflow-wrap:anywhere} }
+
+>>>file: custom/dolielec/includes/certificates.inc.php
 <?php
 // custom/dolielec/includes/certificates.inc.php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
@@ -238,7 +277,7 @@ $socid   = GETPOST('socid','int');
 $backurl = !empty($socid) ? dol_buildpath('/societe/card.php',1).'?id='.$socid.'&tab=documents' : dol_buildpath('/custom/dolielec/doc.php',1).'?tab=brie';
 $doc  = new Documentation($db);
 $inst = $doc->getInst();
-// Directorios base (convenciÃ³n Dolibarr)
+// Directorios base (convención Dolibarr)
 $modroot   = !empty($conf->dolielec->dir_output) ? $conf->dolielec->dir_output : DOL_DATA_ROOT.'/dolielec';
 $tmpDir    = $modroot.'/var/tmp';
 $signedDir = $modroot.'/docs/signed';
@@ -262,7 +301,7 @@ if ($action === 'brie_save') {
     if (!empty($out['DISTRIBUIDORA']))  $targets[] = 'DISTRIBUIDORA';
     if (!empty($out['INSTALADOR']))     $targets[] = 'INSTALADOR';
     if (empty($targets)) $targets = array('TITULAR');
-    // 3) GeneraciÃ³n documentos
+    // 3) Generación documentos
     $generated = array();   // signed pdfs absolutos
 
     $cupsSafe   = dol_sanitizeFileName(!empty($data['CUPS']) ? $data['CUPS'] : 'SIN_CUPS');
@@ -323,7 +362,7 @@ if ($action === 'brie_save') {
         } else {
             // Sin tercero, igualmente deja los ficheros en signed y muestra mensaje con nombres
             $names = array_map('basename', $generated);
-            setEventMessages($langs->trans('RecordSaved').' â€” '.implode(', ', $names), null, 'mesgs');
+            setEventMessages($langs->trans('RecordSaved').' — '.implode(', ', $names), null, 'mesgs');
             header('Location: '.$backurl);
             exit;
         }
@@ -360,7 +399,7 @@ if ($action === 'brie_save') {
             } else {
                 // Si falla el zip, muestra links en mensaje y vuelve
                 $names = array_map('basename', $generated);
-                setEventMessages($langs->trans('RecordSaved').' â€” '.implode(', ', $names), null, 'mesgs');
+                setEventMessages($langs->trans('RecordSaved').' — '.implode(', ', $names), null, 'mesgs');
                 header('Location: '.$backurl);
                 exit;
             }
@@ -391,7 +430,7 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
     print '<tr><td class="titlefield"><label for="brie_date">'.$langs->trans("Date").' *</label></td>';
     print '<td colspan="3"><input type="date" id="brie_date" name="form[BRIE_FECHA]" value="'.$valueDate.'" required></td></tr>';
 
-    // IdentificaciÃ³n
+    // Identificación
     print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIEIdentification").'</th></tr>';
     print '<tr><td class="titlefield"><label for="cups">'.$langs->trans("CUPS").' *</label></td><td colspan="3"><input type="text" id="cups" name="form[CUPS]" required class="quatrevingtpercent"></td></tr>';
 
@@ -421,7 +460,7 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
         print '<td><label for="tit_loc">'.$langs->trans("Town").' *</label></td><td><input type="text" id="tit_loc" name="form[TIT_LOCALIDAD]" required></td></tr>';
     }
 
-    // DirecciÃ³n instalaciÃ³n
+    // Dirección instalación
     print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIEInstallationPlace").'</th></tr>';
     print '<tr><td class="titlefield"><label for="via">'.$langs->trans("Street").' *</label></td><td><input type="text" id="via" name="form[VIA]" required></td>';
     print '<td><label for="num">'.$langs->trans("Number").' *</label></td><td><input type="text" id="num" name="form[NUM]" required></td></tr>';
@@ -431,19 +470,19 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
     print '<td><label for="loc">'.$langs->trans("Town").' *</label></td><td><input type="text" id="loc" name="form[LOCALIDAD]" required></td></tr>';
     print '<tr><td><label for="act_ant">'.$langs->trans("PreviousActivity").'</label></td><td><input type="text" id="act_ant" name="form[ACTIVIDAD_ANT]"></td>';
     print '<td><label for="act_act">'.$langs->trans("NewActivity").'</label></td><td><input type="text" id="act_act" name="form[ACTIVIDAD_ACT]"></td></tr>';
-    print '<tr><td><label for="superf">'.$langs->trans("Surface").' (mÂ²) *</label></td><td><input type="number" id="superf" name="form[SUPERF]" min="0" step="1" required></td><td></td><td></td></tr>';
+    print '<tr><td><label for="superf">'.$langs->trans("Surface").' (m²) *</label></td><td><input type="number" id="superf" name="form[SUPERF]" min="0" step="1" required></td><td></td><td></td></tr>';
 
-    // Datos tÃ©cnicos
+    // Datos técnicos
     print '<tr class="liste_titre"><th colspan="4">'.$langs->trans("BRIETechnicalData").'</th></tr>';
-    print '<tr><td class="titlefield"><label for="dif_num">Interruptors diferencials â€” '.$langs->trans("RCDNumber").' *</label></td><td><input type="number" id="dif_num" name="form[DIF_NUM]" min="0" step="1" required></td>';
+    print '<tr><td class="titlefield"><label for="dif_num">Interruptors diferencials — '.$langs->trans("RCDNumber").' *</label></td><td><input type="number" id="dif_num" name="form[DIF_NUM]" min="0" step="1" required></td>';
     print '<td><label for="dif_sens">'.$langs->trans("Sensitivity").' (mA) *</label></td><td><input type="number" id="dif_sens" name="form[DIF_SENS]" min="0" step="1" required></td></tr>';
-    print '<tr><td class="titlefield"><label for="di_sec">'.$langs->trans("Section").' (mmÂ²) *</label></td><td><input type="text" id="di_sec" name="form[DI_SECCION]" required></td><td></td><td></td></tr>';
+    print '<tr><td class="titlefield"><label for="di_sec">'.$langs->trans("Section").' (mm²) *</label></td><td><input type="text" id="di_sec" name="form[DI_SECCION]" required></td><td></td><td></td></tr>';
     print '<tr><td class="titlefield"><label for="ten_ant">'.$langs->trans("PreviousVoltage").' *</label></td><td><input type="text" id="ten_ant" name="form[TENSION_ANT]" required></td>';
     print '<td><label for="ten_act">'.$langs->trans("NewVoltage").' *</label></td><td><input type="text" id="ten_act" name="form[TENSION_ACT]" required></td></tr>';
     print '<tr><td class="titlefield"><label for="pot_max">'.$langs->trans("MaxPowerKW").' *</label></td><td><input type="number" id="pot_max" name="form[POT_MAX]" step="0.01" min="0" required></td>';
     print '<td><label for="pot_ini">'.$langs->trans("InitialPowerKW").' *</label></td><td><input type="number" id="pot_ini" name="form[POT_INICIAL]" step="0.01" min="0" required></td></tr>';
     print '<tr><td class="titlefield"><label for="pot_con">'.$langs->trans("ContractedPowerKW").' *</label></td><td><input type="number" id="pot_con" name="form[POT_CONTRATAR]" step="0.01" min="0" required></td>';
-    print '<td><label for="prot_tipo">ProtecciÃ³ general</label></td><td>'.
+    print '<td><label for="prot_tipo">Protecció general</label></td><td>'.
         '<span class="opacitymedium">IGA / ICPM</span><br>'.
         '<label><input type="radio" name="form[PROT_GEN_TIPO]" value="IGA" required> IGA</label>'.
         '<label class="marginleftonly"><input type="radio" name="form[PROT_GEN_TIPO]" value="ICPM"> ICPM</label> '.
@@ -468,7 +507,7 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
          '  <input type="radio" id="aisla_no" name="form[AISLAMIENTO]" value="NO" aria-labelledby="lbl_aisla" class="marginleftonly"> <label for="aisla_no">'.$langs->trans("No").'</label>'.
          '</div>'.
     '</td>';
-    print '<td><label for="aisla_val">'.$langs->trans("Resistance").' (Î©) *</label></td><td>'.
+    print '<td><label for="aisla_val">'.$langs->trans("Resistance").' (Ω) *</label></td><td>'.
         '<input type="number" id="aisla_val" name="form[AISLAMIENTO_VALOR]" step="1" min="0" required>'.
     '</td></tr>';
 
@@ -558,7 +597,7 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
 
 >>>file: custom/dolielec/includes/sign.inc.php
 <?php
-// sig_form.inc.php â€“ formulario de firma de PDF con certificado digital
+// sig_form.inc.php – formulario de firma de PDF con certificado digital
 global $langs, $conf;
 $langs->load('dolielec@dolielec');
 
@@ -607,141 +646,141 @@ $langs->load("dolielec@dolielec");
 
 jQuery(document).ready(function($) {
 if (!$('#anthropic_api_key').length) return;
-// BotÃ³n: comprobar conexiÃ³n
+// Botón: comprobar conexión
 
-Â  Â  $('#anthropic_check_api').click(function(e) {
+    $('#anthropic_check_api').click(function(e) {
 
-Â  Â  Â  Â  e.preventDefault();
+        e.preventDefault();
 
-Â  Â  Â  Â  let api_key = $('#anthropic_api_key').val();
+        let api_key = $('#anthropic_api_key').val();
 
-Â  Â  Â  Â  if (!api_key || api_key.trim() === '') {
+        if (!api_key || api_key.trim() === '') {
 
-Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
+            alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
 
-Â  Â  Â  Â  Â  Â  return;
+            return;
 
-Â  Â  Â  Â  }
+        }
 
-Â  Â  Â  Â  $.ajax({
+        $.ajax({
 
-Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/anthropic.ajax.php', 1); ?>",
+            url: "<?php echo dol_buildpath('/custom/dolielec/ajax/anthropic.ajax.php', 1); ?>",
 
-Â  Â  Â  Â  Â  Â  method: "POST",
+            method: "POST",
 
-Â  Â  Â  Â  Â  Â  dataType: "json",
+            dataType: "json",
 
-Â  Â  Â  Â  Â  Â  data: {
+            data: {
 
-Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_conn",
+                action: "check_api_conn",
 
-Â  Â  Â  Â  Â  Â  Â  Â  api_key: api_key
+                api_key: api_key
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  success: function(response) {
+            success: function(response) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  if (response.success) {
+                if (response.success) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.models && Array.isArray(response.models)) {
+                    if (response.models && Array.isArray(response.models)) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  let $modelSelect = $('#anthropic_model');
+                        let $modelSelect = $('#anthropic_model');
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.empty();
+                        $modelSelect.empty();
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  response.models.forEach(function(model) {
+                        response.models.forEach(function(model) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.append($('<option>', {
+                            $modelSelect.append($('<option>', {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  value: model,
+                                value: model,
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  text: model
+                                text: model
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }));
+                            }));
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  });
+                        });
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.default_model) {
+                        if (response.default_model) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.val(response.default_model);
+                            $modelSelect.val(response.default_model);
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+                        }
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
+                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                    } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
+                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+                    }
 
-Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  }
+                }
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+            error: function(xhr, status, error) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
 
-Â  Â  Â  Â  Â  Â  }
+            }
 
-Â  Â  Â  Â  });
+        });
 
-Â  Â  });
+    });
 
-Â  Â  // BotÃ³n: comprobar saldo
+    // Botón: comprobar saldo
 
-Â  Â  $('#check_api_balance').click(function(e) {
+    $('#check_api_balance').click(function(e) {
 
-Â  Â  Â  Â  e.preventDefault();
+        e.preventDefault();
 
-Â  Â  Â  Â  $.ajax({
+        $.ajax({
 
-Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+            url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
 
-Â  Â  Â  Â  Â  Â  method: "POST",
+            method: "POST",
 
-Â  Â  Â  Â  Â  Â  dataType: "json",
+            dataType: "json",
 
-Â  Â  Â  Â  Â  Â  data: {
+            data: {
 
-Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_balance"
+                action: "check_api_balance"
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  success: function(response) {
+            success: function(response) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  if (response.success && typeof response.saldo_eur !== "undefined") {
+                if (response.success && typeof response.saldo_eur !== "undefined") {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " â‚¬");
+                    alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " €");
 
-Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  }
+                }
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+            error: function(xhr, status, error) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
 
-Â  Â  Â  Â  Â  Â  }
+            }
 
-Â  Â  Â  Â  });
+        });
 
-Â  Â  });
+    });
 
 });
 
 >>>file: custom/dolielec/js/doc.js.php
 <?php
-// doc.js.php — dolielec documentation manager JavaScript file.
+// doc.js.php � dolielec documentation manager JavaScript file.
 $res = 0;
 if (!$res && file_exists("../../main.inc.php"))  $res = @include("../../main.inc.php");
 if (!$res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
@@ -830,7 +869,7 @@ jQuery(document).ready(function($) {
       }
     } else {
       $input.prop('disabled', false)
-            .prop('required', true) // requerido solo cuando está habilitado
+            .prop('required', true) // requerido solo cuando est� habilitado
             .removeClass('opacitymedium');
       if ($hidden.length) $hidden.remove();
     }
@@ -920,7 +959,7 @@ jQuery(function($){
 
 >>>file: custom/dolielec/js/geoloc.js.php
 <?php
-// geoloc.js.php â€” JS especÃ­fico de geolocalizaciÃ³n (sin jQuery), Dolibarr-friendly
+// geoloc.js.php — JS específico de geolocalización (sin jQuery), Dolibarr-friendly
 $res = 0;
 if (!$res && file_exists("../../main.inc.php"))       $res = @include("../../main.inc.php");
 if (!$res && file_exists("../../../main.inc.php"))    $res = @include("../../../main.inc.php");
@@ -933,7 +972,7 @@ global $langs; $langs->loadLangs(array('dolielec@dolielec'));
   function $(id){ return document.getElementById(id); }
   function on(el, ev, fn){ if(el) el.addEventListener(ev, fn, false); }
 
-  // Mantener SIEMPRE visible la fila de API key; alternar sÃ³lo readonly/required y el asterisco
+  // Mantener SIEMPRE visible la fila de API key; alternar sólo readonly/required y el asterisco
   function syncApiKey(){
     var prov = $('DOLIELEC_GEO_PROVIDER');
     var key  = $('DOLIELEC_GEO_API_KEY');
@@ -990,126 +1029,140 @@ jQuery(document).ready(function($) {
 if (!$('#google_api_key').length) return; 
 
 
-Â  Â  // BotÃ³n: comprobar conexiÃ³n
+    // Botón: comprobar conexión
 
-Â  Â  $('#google_check_api').click(function(e) {
+    $('#google_check_api').click(function(e) {
 
-Â  Â  Â  Â  e.preventDefault();
+        e.preventDefault();
 
-Â  Â  Â  Â  let api_key = $('#google_api_key').val();
+        let api_key = $('#google_api_key').val();
 
-Â  Â  Â  Â  if (!api_key || api_key.trim() === '') {
+        if (!api_key || api_key.trim() === '') {
 
-Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
+            alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("MissingAPIKey")); ?>");
 
-Â  Â  Â  Â  Â  Â  return;
+            return;
 
-Â  Â  Â  Â  }
+        }
 
-Â  Â  Â  Â  $.ajax({
+        $.ajax({
 
-Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/google.ajax.php', 1); ?>",
+            url: "<?php echo dol_buildpath('/custom/dolielec/ajax/google.ajax.php', 1); ?>",
 
-Â  Â  Â  Â  Â  Â  method: "POST",
+            method: "POST",
 
-Â  Â  Â  Â  Â  Â  dataType: "json",
+            dataType: "json",
 
-Â  Â  Â  Â  Â  Â  data: {
+            data: {
 
-Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_conn",
+                action: "check_api_conn",
 
-Â  Â  Â  Â  Â  Â  Â  Â  api_key: api_key
+                api_key: api_key
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  success: function(response) {
+            success: function(response) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  if (response.success) {
+                if (response.success) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.models && Array.isArray(response.models)) {
+                    if (response.models && Array.isArray(response.models)) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  let $modelSelect = $('#google_model');
+                        let $modelSelect = $('#google_model');
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.empty();
+                        $modelSelect.empty();
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  response.models.forEach(function(model) {
+                        response.models.forEach(function(model) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.append($('<option>', {
+                            $modelSelect.append($('<option>', {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  value: model,
+                                value: model,
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  text: model
+                                text: model
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }));
+                            }));
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  });
+                        });
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (response.default_model) {
+                        if (response.default_model) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  $modelSelect.val(response.default_model);
+                            $modelSelect.val(response.default_model);
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+                        }
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
+                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                    } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
+                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  }
+                    }
 
-Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  }
+                }
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+            error: function(xhr, status, error) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
 
-Â  Â  Â  Â  Â  Â  }
+            }
 
-Â  Â  Â  Â  });
+        });
 
-Â  Â  });
+    });
 
-Â  Â  // BotÃ³n: comprobar saldo
+    // Botón: comprobar saldo
 
-Â  Â  $('#check_api_balance').click(function(e) {
+    $('#check_api_balance').click(function(e) {
 
-Â  Â  Â  Â  e.preventDefault();
+        e.preventDefault();
 
-Â  Â  Â  Â  $.ajax({
+        $.ajax({
 
-Â  Â  Â  Â  Â  Â  url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+            url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
 
-Â  Â  Â  Â  Â  Â  method: "POST",
+            method: "POST",
 
-Â  Â  Â  Â  Â  Â  dataType: "json",
+            dataType: "json",
 
-Â  Â  Â  Â  Â  Â  data: {
+            data: {
 
-Â  Â  Â  Â  Â  Â  Â  Â  action: "check_api_balance"
+                action: "check_api_balance"
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  success: function(response) {
+            success: function(response) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  if (response.success && typeof response.saldo_eur !== "undefined") {
+                if (response.success && typeof response.saldo_eur !== "undefined") {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " â‚¬");
+                    alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " €");
 
-Â  Â  Â  Â  Â  Â  Â  Â  } else {
+                } else {
 
-Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
 
-Â  Â  Â  Â  Â  Â  Â  Â  }
+                }
 
-Â  Â  Â  Â  Â  Â  },
+            },
 
-Â  Â  Â  Â  Â  Â  error: function(xhr, status, error) {
+            error: function(xhr, status, error) {
 
-Â  Â  Â  Â  Â  Â  Â  Â  alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance"));
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+
+            }
+
+        });
+
+    });
+
+});
+
+>>>file: custom/dolielec/js/openai.js.php
+<?php
+$res = 0;
+if (! $res && file_exists("../../main.inc.php")) $res = @include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res = @include("../..

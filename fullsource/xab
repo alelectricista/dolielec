@@ -1,6 +1,4 @@
-cSetup'), -1, 'dolielec@dolielec');
-$base = __DIR__;
-include $base.'/'.$cfg[$tab][1];
+$base.'/'.$cfg[$tab][1];
 $js = '/custom/dolielec/js/dolielec.js.php';
 echo "\n<script type=\"text/javascript\" src=\"".dol_buildpath($js,1)."\"></script>\n";
 dol_fiche_end();
@@ -144,7 +142,7 @@ case 'brie_save': // flujo completo por AJAX
 	echo json_encode(array('success'=>true,'files'=>$files));
 	exit;
 
-case 'signPdf': // firma suelta (subida input file) â†’ devuelve blob/pdf
+case 'signPdf': // firma suelta (subida input file) → devuelve blob/pdf
 	if (empty($user->rights->dolielec->write) && empty($user->admin)) accessforbidden();
 
 	if (empty($_FILES['file_pdf']['tmp_name']) || !is_uploaded_file($_FILES['file_pdf']['tmp_name'])) {
@@ -371,7 +369,7 @@ for ($i = 0; $i < 3; $i++) {
     print '<input type="number" id="' . $id . '" 
         name="params[office][metter][]" 
         min="0" step="1" class="minwidth50" 
-        placeholder="mÂ²" 
+        placeholder="m²" 
         aria-label="' . $langs->trans("PremiseSurface") . ' ' . ($i+1) . '"> ';
 }
 print '</fieldset></td>';
@@ -543,20 +541,20 @@ if (!empty($parameters['currentcontext']) && $parameters['currentcontext'] === '
 	if (is_object($object) && $object->element === 'ticket') {
 		$titulo = dol_strtolower($object->subject);
 		$mensaje = dol_strtolower($object->message);
-		if (preg_match('/presupuesto|instalaci[oÃ³]n/', $titulo . ' ' . $mensaje)) {
-															// Evitar mÃºltiples respuestas automÃ¡ticas
+		if (preg_match('/presupuesto|instalaci[oó]n/', $titulo . ' ' . $mensaje)) {
+															// Evitar múltiples respuestas automáticas
 			if (empty($object->note_private) || strpos($object->note_private, 'BIEL_AUTO_RESPONDIDO') === false) {
 								$response = "Estimado cliente, gracias por contactar. Para poder prepararte un presupuesto ajustado necesitamos estos datos:\n\n";
 				$response .= "- Nombre completo y apellidos\n";
-				$response .= "- DirecciÃ³n completa (calle, nÃºmero, pisoâ€¦)\n";
+				$response .= "- Dirección completa (calle, número, piso…)\n";
 				$response .= "- Ciudad, provincia\n";
-				$response .= "- TelÃ©fono o mÃ³vil\n";
-				$response .= "- Correo electrÃ³nico\n";
+				$response .= "- Teléfono o móvil\n";
+				$response .= "- Correo electrónico\n";
 				$response .= "- DNI, NIE o tarjeta de residencia\n";
-				$response .= "- Y si eres particular, empresa, autÃ³nomo o comunidad de vecinos\n\n";
-				$response .= "En cuanto tengamos esto, creamos la ficha y seguimos. Esto es necesario e imprescindible para darte una atenciÃ³n personalizada.";
+				$response .= "- Y si eres particular, empresa, autónomo o comunidad de vecinos\n\n";
+				$response .= "En cuanto tengamos esto, creamos la ficha y seguimos. Esto es necesario e imprescindible para darte una atención personalizada.";
 
-				// Crear respuesta automÃ¡tica
+				// Crear respuesta automática
 				$object->addResponse($user, dol_htmlentities($response), 'Biel', '', '', 0, '', 0, '', '', 0, '', 0);
 
 
@@ -803,7 +801,7 @@ if (!empty($parameters['currentcontext']) && $parameters['currentcontext'] === '
 			$counter = count($parameters['head']);
 			$element = $parameters['object']->element;
 			$id = $parameters['object']->id;
-			// verifier le type d'onglet comme member_stats oÃ¹ Ã§a ne doit pas apparaitre
+			// verifier le type d'onglet comme member_stats où ça ne doit pas apparaitre
 			// if (in_array($element, ['societe', 'member', 'contrat', 'fichinter', 'project', 'propal', 'commande', 'facture', 'order_supplier', 'invoice_supplier'])) {
 			if (in_array($element, ['context1', 'context2'])) {
 				$datacount = 0;
@@ -1034,7 +1032,7 @@ class Documentation {
 			}
 		}
 
-		// defaults mínimos
+		// defaults m�nimos
 		if (empty($data['BRIE_FECHA'])) $data['BRIE_FECHA'] = dol_print_date(dol_now(), '%Y-%m-%d');
 		if (!isset($data['ASCENSOR'])) $data['ASCENSOR'] = 'NO';
 		if (!isset($data['TIERRA_EXISTE'])) $data['TIERRA_EXISTE'] = 'NO';
@@ -1045,10 +1043,10 @@ class Documentation {
 
 	/**
 	 * Genera un ODT a partir de una plantilla.
-	 * Aquí no inventamos motor: si no tienes sustitución de marcadores, se copia tal cual.
+	 * Aqu� no inventamos motor: si no tienes sustituci�n de marcadores, se copia tal cual.
 	 * @param string $template Ruta a la plantilla .odt
 	 * @param string $output   Ruta al ODT de salida
-	 * @param array  $data     Datos del formulario (si conectas un motor, úsalo aquí)
+	 * @param array  $data     Datos del formulario (si conectas un motor, �salo aqu�)
 	 * @return array ['success'=>bool,'file'=>string|false,'message'=>string]
 	 */
 	public function renderODT($template, $output, $data=array()) {
@@ -1067,7 +1065,7 @@ class Documentation {
 	}
 
 	/**
-	 * Convierte ODT?PDF usando soffice/unoconv si están disponibles
+	 * Convierte ODT?PDF usando soffice/unoconv si est�n disponibles
 	 * @param string $odt
 	 * @param string $pdf
 	 * @return array
@@ -1115,7 +1113,7 @@ class Documentation {
 		$pass = !empty($conf->global->DOLIELEC_CERT_PASS) ? $conf->global->DOLIELEC_CERT_PASS : '';
 		$cmdt = !empty($conf->global->DOLIELEC_SIGN_CMD) ? $conf->global->DOLIELEC_SIGN_CMD : '';
 
-		// ruta rápida: comando externo si está definido
+		// ruta r�pida: comando externo si est� definido
 		if ($cmdt != '') {
 			$cmd = strtr($cmdt, array(
 				'%in'   => escapeshellarg($srcPdf),
@@ -1157,7 +1155,7 @@ class Documentation {
 >>>file: custom/dolielec/class/geoloc.class.php
 <?php
 /**
- *  DoliElec - GeolocalizaciÃ³n y Costes de desplazamiento
+ *  DoliElec - Geolocalización y Costes de desplazamiento
  *  @package    dolielec
  */
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -1187,7 +1185,8 @@ class Geoloc {
 
     private function call($path, $method = 'GET', $data = null) {
         global $langs;
-        if (empty($this->key)) {
+		$key = ($key !== '') ? $key : $this->key;
+        if (empty($key)) {
             return array('success' => false, 'message' => $langs->trans('MissingAPIKey'));
         }
         if (empty($this->provider)) {
@@ -1342,4 +1341,10 @@ class Geoloc {
             return array('success' => false, 'message' => $langs->trans('NotAClientObject'));
         }
 
-  
+        if (empty($data['cost_eur'])) {
+            return array('success' => false, 'message' => $langs->trans('MissingTravelCost'));
+        }
+
+        $client->array_options['options_dolielec_travel_cost_eur'] = $data['cost_eur'];
+
+        $res = $client->update($clie
