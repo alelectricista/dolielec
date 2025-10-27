@@ -1,4 +1,6 @@
-�           }
+del);
+
+                        }
 
                         alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
 
@@ -71,6 +73,7 @@
     });
 
 });
+
 >>>file: custom/dolielec/js/openai.js.php
 <?php
 $res = 0;
@@ -218,6 +221,7 @@ if (!$('#openai_api_key').length) return;
     });
 
 });
+
 >>>file: custom/dolielec/lib/calculate.lib.php
 <?php
 //functions for calculate load previsions on diferent offices, for ITC-BT-10 compliance and other ITC's with same requirements.
@@ -445,6 +449,7 @@ return null;
     $dv_v = $k * $i * ($r * $cosphi + $x * sqrt(1 - $cosphi * $cosphi)) * $l;
     return ($dv_v * 100) / $u;
 }
+
 >>>file: custom/dolielec/lib/dolielec.lib.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -777,6 +782,7 @@ if ($save_to !== '') {
 
     return array('success'=>true,'http'=>$http,'json'=>null,'raw'=>$raw,'content_type'=>$ctype,'message'=>null);
 }
+
 >>>file: custom/dolielec/sql/dolielec.sql
 -- Cache de costes por tercero/contexto
 CREATE TABLE IF NOT EXISTS llx_dolielec_cost_cache (
@@ -837,7 +843,9 @@ entity integer NOT NULL DEFAULT 1,
   message LONGTEXT NOT NULL,
   tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY id(msgid)
-) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;>>>file: custom/dolielec/doc.php
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+>>>file: custom/dolielec/doc.php
 <?php
 //doc.php - dolielec documentation manager file.
 $res = 0;

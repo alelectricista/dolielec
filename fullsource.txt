@@ -102,6 +102,7 @@ print '<div class="center">';
 print '<input type="submit" class="button button-save" value="' . $langs->trans("Save") . '">';
 print '</div>';
 print '</form>';
+
 ?>>>>file: custom/dolielec/admin/doc.php
 <?php
 //doc.php - IDM configuration file.
@@ -281,6 +282,7 @@ if (is_array($scan_info)) {
     print '<tr><td>'.$langs->trans("ValidTo").'</td><td>'.dol_escape_htmltag($validTo).'</td></tr>';
     print '</table></div>';
 }
+
 ?>>>>file: custom/dolielec/admin/geoloc.php
 <?php
 // geoloc.php — configuración de geolocalización (estilo openai.php limpio)
@@ -608,6 +610,7 @@ if (file_exists(DOL_DOCUMENT_ROOT . $js)) {
 }
 
 llxFooter();
+
 >>>file: custom/dolielec/admin/google.php
 <?php
 //google.php, page configuration for googleAI parameters configuration
@@ -650,6 +653,7 @@ print '<div class="center">';
 print '<input type="submit" class="button button-save" value="' . $langs->trans("Save") . '">';
 print '</div>';
 print '</form>';
+
 ?>>>>file: custom/dolielec/admin/openai.php
 <?php
 
@@ -754,6 +758,7 @@ print '<div class="center">';
 print '<input type="submit" class="button button-save" value="' . $langs->trans("Save") . '">';
 print '</div>';
 print '</form>';
+
 ?>>>>file: custom/dolielec/admin/setup.php
 <?php
 $res = 0;
@@ -805,7 +810,9 @@ include $base.'/'.$cfg[$tab][1];
 $js = '/custom/dolielec/js/dolielec.js.php';
 echo "\n<script type=\"text/javascript\" src=\"".dol_buildpath($js,1)."\"></script>\n";
 dol_fiche_end();
-llxFooter();>>>file: custom/dolielec/ajax/anthropic.ajax.php
+llxFooter();
+
+>>>file: custom/dolielec/ajax/anthropic.ajax.php
 <?php
 $res = @include '../../main.inc.php';
 if (!$res) $res = @include '../../../main.inc.php';
@@ -850,6 +857,7 @@ switch ($action) {
         echo json_encode(array('error' => 'Unknown action'));
         exit;
 }
+
 >>>file: custom/dolielec/ajax/doc.ajax.php
 <?php
 // custom/dolielec/ajax/doc.ajax.php
@@ -974,6 +982,7 @@ default:
 	header('Content-Type: application/json; charset=UTF-8');
 	echo json_encode(array('success'=>false,'message'=>'Unknown action')); exit;
 }
+
 >>>file: custom/dolielec/ajax/google.ajax.php
 <?php
 $res = @include '../../main.inc.php';
@@ -1019,6 +1028,7 @@ switch ($action) {
         echo json_encode(array('error' => 'Unknown action'));
         exit;
 }
+
 >>>file: custom/dolielec/ajax/openai.ajax.php
 <?php
 $res = @include '../../main.inc.php';
@@ -1064,6 +1074,7 @@ switch ($action) {
         echo json_encode(array('error' => 'Unknown action'));
         exit;
 }
+
 >>>file: custom/dolielec/calc/homeoffices.php
 <?php
 $res = 0;
@@ -1208,7 +1219,9 @@ print '<div class="center">';
 print '<input type="submit" class="button button-save" value="' . $langs->trans("Calculate") . '">';
 print '</div>';
 print '</form>';
-?>>>>file: custom/dolielec/class/actions_dolielec.class.php
+?>
+
+>>>file: custom/dolielec/class/actions_dolielec.class.php
 <?php
 /* Copyright (C) 2023		Laurent Destailleur			<eldy@users.sourceforge.net>
  * Copyright (C) ---Replace with your own copyright and developer email---
@@ -1636,6 +1649,7 @@ if (!empty($parameters['currentcontext']) && $parameters['currentcontext'] === '
 	 */
 	/* Add other hook methods here... */
 }
+
 >>>file: custom/dolielec/class/anthropic.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -1760,6 +1774,7 @@ class ClaudeAI {
         $resp = $this->call('messages', 'POST', $data, $api);
         return $resp;
     }
+
 }>>>file: custom/dolielec/class/doc.class.php
 <?php
 // custom/dolielec/class/doc.class.php
@@ -1945,6 +1960,7 @@ class Documentation {
 		return $dest;
 	}
 }
+
 >>>file: custom/dolielec/class/geoloc.class.php
 <?php
 /**
@@ -2147,6 +2163,7 @@ class Geoloc {
 
         return array('success' => true, 'message' => $langs->trans('TravelCostSaved'), 'cost_eur' => $data['cost_eur']);
     }
+
 }>>>file: custom/dolielec/class/google.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -2253,6 +2270,7 @@ class GoogleAI {
 
         return array('success'=>true,'models'=>$filtered);
     }
+
 }>>>file: custom/dolielec/class/openai.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -2401,6 +2419,7 @@ class OpenAI {
              $resp = $this->call('chat/completions', 'POST', $data, $api);
         return $resp;
     }
+
 }>>>file: custom/dolielec/class/profit.class.php
 <?php
 /**
@@ -2484,6 +2503,7 @@ class Profit {
             return array('success' => false, 'message' => $langs->trans('OpenAIError').': '.$e->getMessage());
         }
     }
+
 }>>>file: custom/dolielec/core/modules/modDolielec.class.php
 <?php
 /* Copyright (C) 2004-2018	Laurent Destailleur			<eldy@users.sourceforge.net>
@@ -2994,6 +3014,7 @@ $extrafields = new ExtraFields($this->db);
 		return $this->_remove($sql, $options);
 	}
 }
+
 			>>>file: custom/dolielec/core/triggers/interface_99_moddolielec_DolielecTriggers.class.php
 <?php
 /* Copyright (C) 2023		Laurent Destailleur			<eldy@users.sourceforge.net>
@@ -3415,6 +3436,7 @@ if ($action === 'COMPANY_CREATE' || $action === 'COMPANY_MODIFY') {
 }
 
 // TODO: could not locate method companyCreate
+
 >>>file: custom/dolielec/core/triggers/interface_99_moddolielec_ProfitTriggers.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
@@ -3454,6 +3476,7 @@ class InterfaceProfitTriggers extends DolibarrTriggers {
              dol_syslog(__METHOD__.': Precio calculado automáticamente: '.$result['price'].' EUR', LOG_INFO);
         return 0;
     }
+
 }>>>file: custom/dolielec/css/dolielec.css.php
 <?php
 // dolielec.css.php - CSS accesible para el módulo Dolielec (bloque 17)
@@ -3497,6 +3520,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .biel-identity li{margin:.25rem 0}
 .biel-identity code{padding:.1rem .3rem;border:1px solid #888;border-radius:.2rem}
 @media (max-width: 360px){ .biel-identity{max-width:100%;word-break:break-word;overflow-wrap:anywhere} }
+
 >>>file: custom/dolielec/includes/certificates.inc.php
 <?php
 // custom/dolielec/includes/certificates.inc.php
@@ -3834,6 +3858,7 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
     print '</div>';
     print '</form>';
 }
+
 >>>file: custom/dolielec/includes/sign.inc.php
 <?php
 // sig_form.inc.php – formulario de firma de PDF con certificado digital
@@ -3868,6 +3893,7 @@ print '</form>';
 // Carga JS para firma
 print '<script type="text/javascript" src="'.dol_buildpath('/custom/dolielec/js/doc.js.php',1).'"></script>';
 ?>
+
 >>>file: custom/dolielec/js/anthropic.js.php
 <?php
 $res = 0;
@@ -4015,6 +4041,7 @@ if (!$('#anthropic_api_key').length) return;
     });
 
 });
+
 >>>file: custom/dolielec/js/doc.js.php
 <?php
 // doc.js.php � dolielec documentation manager JavaScript file.
@@ -4139,6 +4166,7 @@ jQuery(document).ready(function($) {
     syncTierra(); syncAislamiento(); syncAscensor();
   });
 });
+
 >>>file: custom/dolielec/js/dolielec.js.php
 <?php
 $res = 0;
@@ -4246,6 +4274,7 @@ global $langs; $langs->loadLangs(array('dolielec@dolielec'));
     on(prov, 'change', syncApiKey);
     syncApiKey();
   });
+
 })();>>>file: custom/dolielec/js/google.js.php
 <?php
 $res = 0;
@@ -4395,6 +4424,7 @@ if (!$('#google_api_key').length) return;
     });
 
 });
+
 >>>file: custom/dolielec/js/openai.js.php
 <?php
 $res = 0;
@@ -4542,6 +4572,7 @@ if (!$('#openai_api_key').length) return;
     });
 
 });
+
 >>>file: custom/dolielec/lib/calculate.lib.php
 <?php
 //functions for calculate load previsions on diferent offices, for ITC-BT-10 compliance and other ITC's with same requirements.
@@ -4769,6 +4800,7 @@ return null;
     $dv_v = $k * $i * ($r * $cosphi + $x * sqrt(1 - $cosphi * $cosphi)) * $l;
     return ($dv_v * 100) / $u;
 }
+
 >>>file: custom/dolielec/lib/dolielec.lib.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -5101,6 +5133,7 @@ if ($save_to !== '') {
 
     return array('success'=>true,'http'=>$http,'json'=>null,'raw'=>$raw,'content_type'=>$ctype,'message'=>null);
 }
+
 >>>file: custom/dolielec/sql/dolielec.sql
 -- Cache de costes por tercero/contexto
 CREATE TABLE IF NOT EXISTS llx_dolielec_cost_cache (
@@ -5161,7 +5194,9 @@ entity integer NOT NULL DEFAULT 1,
   message LONGTEXT NOT NULL,
   tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY id(msgid)
-) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;>>>file: custom/dolielec/doc.php
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+>>>file: custom/dolielec/doc.php
 <?php
 //doc.php - dolielec documentation manager file.
 $res = 0;

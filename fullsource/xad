@@ -1,4 +1,4 @@
- code here
+you can execute some code here
 		//switch ($action) {  // @phan-suppress-current-line PhanNoopSwitchCases
 			// Users
 			//case 'USER_CREATE':
@@ -250,6 +250,7 @@
 }
 
 // TODO: could not locate method companyCreate
+
 >>>file: custom/dolielec/core/triggers/interface_99_moddolielec_ProfitTriggers.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
@@ -289,6 +290,7 @@ class InterfaceProfitTriggers extends DolibarrTriggers {
              dol_syslog(__METHOD__.': Precio calculado automáticamente: '.$result['price'].' EUR', LOG_INFO);
         return 0;
     }
+
 }>>>file: custom/dolielec/css/dolielec.css.php
 <?php
 // dolielec.css.php - CSS accesible para el módulo Dolielec (bloque 17)
@@ -332,6 +334,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .biel-identity li{margin:.25rem 0}
 .biel-identity code{padding:.1rem .3rem;border:1px solid #888;border-radius:.2rem}
 @media (max-width: 360px){ .biel-identity{max-width:100%;word-break:break-word;overflow-wrap:anywhere} }
+
 >>>file: custom/dolielec/includes/certificates.inc.php
 <?php
 // custom/dolielec/includes/certificates.inc.php
@@ -669,6 +672,7 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
     print '</div>';
     print '</form>';
 }
+
 >>>file: custom/dolielec/includes/sign.inc.php
 <?php
 // sig_form.inc.php – formulario de firma de PDF con certificado digital
@@ -703,6 +707,7 @@ print '</form>';
 // Carga JS para firma
 print '<script type="text/javascript" src="'.dol_buildpath('/custom/dolielec/js/doc.js.php',1).'"></script>';
 ?>
+
 >>>file: custom/dolielec/js/anthropic.js.php
 <?php
 $res = 0;
@@ -850,6 +855,7 @@ if (!$('#anthropic_api_key').length) return;
     });
 
 });
+
 >>>file: custom/dolielec/js/doc.js.php
 <?php
 // doc.js.php � dolielec documentation manager JavaScript file.
@@ -974,6 +980,7 @@ jQuery(document).ready(function($) {
     syncTierra(); syncAislamiento(); syncAscensor();
   });
 });
+
 >>>file: custom/dolielec/js/dolielec.js.php
 <?php
 $res = 0;
@@ -1081,6 +1088,7 @@ global $langs; $langs->loadLangs(array('dolielec@dolielec'));
     on(prov, 'change', syncApiKey);
     syncApiKey();
   });
+
 })();>>>file: custom/dolielec/js/google.js.php
 <?php
 $res = 0;
@@ -1155,6 +1163,4 @@ if (!$('#google_api_key').length) return;
 
                         if (response.default_model) {
 
-                            $modelSelect.val(response.default_model);
-
-            �
+                            $modelSelect.val(response.default_mo

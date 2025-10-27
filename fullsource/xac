@@ -1,10 +1,11 @@
->db);
+ent->id, $this->db);
         if ($res <= 0) {
             return array('success' => false, 'message' => $langs->trans('ErrorSavingTravelCost'));
         }
 
         return array('success' => true, 'message' => $langs->trans('TravelCostSaved'), 'cost_eur' => $data['cost_eur']);
     }
+
 }>>>file: custom/dolielec/class/google.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -111,6 +112,7 @@ class GoogleAI {
 
         return array('success'=>true,'models'=>$filtered);
     }
+
 }>>>file: custom/dolielec/class/openai.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -259,6 +261,7 @@ class OpenAI {
              $resp = $this->call('chat/completions', 'POST', $data, $api);
         return $resp;
     }
+
 }>>>file: custom/dolielec/class/profit.class.php
 <?php
 /**
@@ -342,6 +345,7 @@ class Profit {
             return array('success' => false, 'message' => $langs->trans('OpenAIError').': '.$e->getMessage());
         }
     }
+
 }>>>file: custom/dolielec/core/modules/modDolielec.class.php
 <?php
 /* Copyright (C) 2004-2018	Laurent Destailleur			<eldy@users.sourceforge.net>
@@ -852,6 +856,7 @@ $extrafields = new ExtraFields($this->db);
 		return $this->_remove($sql, $options);
 	}
 }
+
 			>>>file: custom/dolielec/core/triggers/interface_99_moddolielec_DolielecTriggers.class.php
 <?php
 /* Copyright (C) 2023		Laurent Destailleur			<eldy@users.sourceforge.net>
@@ -1021,4 +1026,4 @@ if ($action === 'COMPANY_CREATE' || $action === 'COMPANY_MODIFY') {
         }
         return 0;
     }
-		// Or you can execute some
+		// Or 
