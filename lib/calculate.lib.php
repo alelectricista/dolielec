@@ -130,7 +130,8 @@ $total += $res['value'];
 }
 if (!empty($params['service'])) {
 $res = getComService($params['service']['elevation'] ?? null, $params['service']['engines'] ?? [], $params['service']['led'] ?? null);
-if (!empty($res['success']) && isset($res['value'])) {
+if (!empty($res['
+']) && isset($res['value'])) {
 $total += $res['value'];
 }
 }
@@ -172,7 +173,7 @@ function getIndustries($pl = null, $metter = null) {
 }
 //ITC-BT-52 compliance
 function getCollectiveParking($pev, $spl) {
-	global $langs, $params;
+	global $langs;
 	if ($pev < 0) {
 		return array('success' => $langs->trans('NumberInvalid'));
 	}

@@ -1,10 +1,8 @@
-$base.'/'.$cfg[$tab][1];
+.'/'.$cfg[$tab][1];
 $js = '/custom/dolielec/js/dolielec.js.php';
 echo "\n<script type=\"text/javascript\" src=\"".dol_buildpath($js,1)."\"></script>\n";
 dol_fiche_end();
-llxFooter();
-
->>>file: custom/dolielec/ajax/anthropic.ajax.php
+llxFooter();>>>file: custom/dolielec/ajax/anthropic.ajax.php
 <?php
 $res = @include '../../main.inc.php';
 if (!$res) $res = @include '../../../main.inc.php';
@@ -49,7 +47,6 @@ switch ($action) {
         echo json_encode(array('error' => 'Unknown action'));
         exit;
 }
-
 >>>file: custom/dolielec/ajax/doc.ajax.php
 <?php
 // custom/dolielec/ajax/doc.ajax.php
@@ -174,7 +171,6 @@ default:
 	header('Content-Type: application/json; charset=UTF-8');
 	echo json_encode(array('success'=>false,'message'=>'Unknown action')); exit;
 }
-
 >>>file: custom/dolielec/ajax/google.ajax.php
 <?php
 $res = @include '../../main.inc.php';
@@ -220,7 +216,6 @@ switch ($action) {
         echo json_encode(array('error' => 'Unknown action'));
         exit;
 }
-
 >>>file: custom/dolielec/ajax/openai.ajax.php
 <?php
 $res = @include '../../main.inc.php';
@@ -266,7 +261,6 @@ switch ($action) {
         echo json_encode(array('error' => 'Unknown action'));
         exit;
 }
-
 >>>file: custom/dolielec/calc/homeoffices.php
 <?php
 $res = 0;
@@ -411,7 +405,6 @@ print '<div class="center">';
 print '<input type="submit" class="button button-save" value="' . $langs->trans("Calculate") . '">';
 print '</div>';
 print '</form>';
-
 ?>>>>file: custom/dolielec/class/actions_dolielec.class.php
 <?php
 /* Copyright (C) 2023		Laurent Destailleur			<eldy@users.sourceforge.net>
@@ -840,7 +833,6 @@ if (!empty($parameters['currentcontext']) && $parameters['currentcontext'] === '
 	 */
 	/* Add other hook methods here... */
 }
-
 >>>file: custom/dolielec/class/anthropic.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -965,7 +957,6 @@ class ClaudeAI {
         $resp = $this->call('messages', 'POST', $data, $api);
         return $resp;
     }
-
 }>>>file: custom/dolielec/class/doc.class.php
 <?php
 // custom/dolielec/class/doc.class.php
@@ -1151,7 +1142,6 @@ class Documentation {
 		return $dest;
 	}
 }
-
 >>>file: custom/dolielec/class/geoloc.class.php
 <?php
 /**
@@ -1347,4 +1337,4 @@ class Geoloc {
 
         $client->array_options['options_dolielec_travel_cost_eur'] = $data['cost_eur'];
 
-        $res = $client->update($clie
+        $res = $client->update($client->id, $this-

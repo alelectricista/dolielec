@@ -1,4 +1,81 @@
-/../main.inc.php");
+�           }
+
+                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
+
+                    } else {
+
+                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
+
+                    }
+
+                } else {
+
+                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+
+                }
+
+            },
+
+            error: function(xhr, status, error) {
+
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
+
+            }
+
+        });
+
+    });
+
+    // Botón: comprobar saldo
+
+    $('#check_api_balance').click(function(e) {
+
+        e.preventDefault();
+
+        $.ajax({
+
+            url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
+
+            method: "POST",
+
+            dataType: "json",
+
+            data: {
+
+                action: "check_api_balance"
+
+            },
+
+            success: function(response) {
+
+                if (response.success && typeof response.saldo_eur !== "undefined") {
+
+                    alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " €");
+
+                } else {
+
+                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+
+                }
+
+            },
+
+            error: function(xhr, status, error) {
+
+                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
+
+            }
+
+        });
+
+    });
+
+});
+>>>file: custom/dolielec/js/openai.js.php
+<?php
+$res = 0;
+if (! $res && file_exists("../../main.inc.php")) $res = @include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res = @include("../../../main.inc.php");
 if (! $res && file_exists("../../../../main.inc.php")) $res = @include("../../../../main.inc.php");
 if (! $res) die("Include of main fails");
 
@@ -141,7 +218,6 @@ if (!$('#openai_api_key').length) return;
     });
 
 });
-
 >>>file: custom/dolielec/lib/calculate.lib.php
 <?php
 //functions for calculate load previsions on diferent offices, for ITC-BT-10 compliance and other ITC's with same requirements.
@@ -275,7 +351,8 @@ $total += $res['value'];
 }
 if (!empty($params['service'])) {
 $res = getComService($params['service']['elevation'] ?? null, $params['service']['engines'] ?? [], $params['service']['led'] ?? null);
-if (!empty($res['success']) && isset($res['value'])) {
+if (!empty($res['
+']) && isset($res['value'])) {
 $total += $res['value'];
 }
 }
@@ -317,7 +394,7 @@ function getIndustries($pl = null, $metter = null) {
 }
 //ITC-BT-52 compliance
 function getCollectiveParking($pev, $spl) {
-	global $langs, $params;
+	global $langs;
 	if ($pev < 0) {
 		return array('success' => $langs->trans('NumberInvalid'));
 	}
@@ -368,7 +445,6 @@ return null;
     $dv_v = $k * $i * ($r * $cosphi + $x * sqrt(1 - $cosphi * $cosphi)) * $l;
     return ($dv_v * 100) / $u;
 }
-
 >>>file: custom/dolielec/lib/dolielec.lib.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
@@ -701,10 +777,9 @@ if ($save_to !== '') {
 
     return array('success'=>true,'http'=>$http,'json'=>null,'raw'=>$raw,'content_type'=>$ctype,'message'=>null);
 }
-
 >>>file: custom/dolielec/sql/dolielec.sql
 -- Cache de costes por tercero/contexto
-<CREATE TABLE IF NOT EXISTS llx_dolielec_cost_cache (
+CREATE TABLE IF NOT EXISTS llx_dolielec_cost_cache (
   rowid integer AUTO_INCREMENT PRIMARY KEY,
   entity integer NOT NULL DEFAULT 1,
   fk_thirdparty integer NOT NULL,
@@ -713,48 +788,56 @@ if ($save_to !== '') {
   tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_entity_third_ctx (entity, fk_thirdparty, context_key)
 ) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Entrenamiento de biel
 CREATE TABLE IF NOT EXISTS llx_dolielec_biel_learn (
-rowid integer AUTO_INCREMENT primary key,
-entity integer not null default 1,
-fk_blockid integer not null,
-fk_sublock integer,
-ctx MEDIUMTEXT not null,
-tms timestamp not null default current_timestamp on update current_timestamp,
-unique key BlockLearningID(fk_blockid, fk_sublock))
-engine=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
--- frases para relación psicológica orientada
-create table if not exists llx_dolielec_rpo (
-rowid integer AUTO_INCREMENT primary key,
-entity integer not null default 1,
-rpoid varchar(10) not null,
-rpo_sentence varchar(255) not null,
-unique key RPO(rpoid))
-engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+  entity integer NOT NULL DEFAULT 1,
+  fk_blockid integer NOT NULL,
+  fk_sublock integer,
+  ctx MEDIUMTEXT NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY BlockLearningID(fk_blockid, fk_sublock)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS llx_dolielec_openai_balance(
-rowid integer auto_increment not null primary key,
-idmodel varchar(5) not null,
-total decimal not null,
-unique key tokenid (idmodel))
-engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
-CREATE TABLE IF NOT EXISTS llx_dolielec_anthropic_balance(
-rowid integer auto_increment not null primary key,
-idmodel varchar(5) not null,
-total decimal not null,
-tms timestamp not null default current_timestamp on update current_timestamp,
-unique key tokenid (idmodel))
-engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+-- Frases para relación psicológica orientada
+CREATE TABLE IF NOT EXISTS llx_dolielec_rpo (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+  entity integer NOT NULL DEFAULT 1,
+  rpoid varchar(10) NOT NULL,
+  rpo_sentence varchar(255) NOT NULL,
+  UNIQUE KEY RPO(rpoid)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS llx_dolielec_memories(
-rowid integer auto_increment not null,
-msgid varchar(50) not null,
-message text not null,
-tms timestamp not null default current_timestamp on update current_timestamp,
-unique key id(msgid))
-engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+-- Balance OpenAI
+CREATE TABLE IF NOT EXISTS llx_dolielec_openai_balance (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+entity integer NOT NULL DEFAULT 1,
+  idmodel varchar(50) NOT NULL,
+  total decimal(10,2) NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY tokenid (idmodel)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
->>>file: custom/dolielec/doc.php
+-- Balance Anthropic
+CREATE TABLE IF NOT EXISTS llx_dolielec_anthropic_balance (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+entity integer NOT NULL DEFAULT 1,
+  idmodel varchar(50) NOT NULL,
+  total decimal(10,2) NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY tokenid (idmodel)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Memorias del sistema
+CREATE TABLE IF NOT EXISTS llx_dolielec_memories (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+entity integer NOT NULL DEFAULT 1,
+  msgid varchar(50) NOT NULL,
+  message LONGTEXT NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY id(msgid)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;>>>file: custom/dolielec/doc.php
 <?php
 //doc.php - dolielec documentation manager file.
 $res = 0;

@@ -1,4 +1,6 @@
 #!/bin/bash
+rm fullsource.txt
+touch fullsource.txt
 echo ">>>file: custom/dolielec/admin/anthropic.php" >> fullsource.txt
 cat admin/anthropic.php >> fullsource.txt
 echo ">>>file: custom/dolielec/admin/doc.php" >> fullsource.txt
@@ -67,3 +69,13 @@ echo ">>>file: custom/dolielec/sql/dolielec.sql" >> fullsource.txt
 cat sql/dolielec.sql.txt >>fullsource.txt
 echo ">>>file: custom/dolielec/doc.php" >> fullsource.txt
 cat doc.php >>fullsource.txt
+rm -Rf fullsource/*
+cp fullsource.txt fullsource/fullsource.txt
+cd fullsource
+split -b 50k fullsource.txt
+rm fullsource.txt
+cd ..
+git add .
+git commit -m "updated temporally source files for AI"
+git push
+echo "todas las operaciones se han completado"

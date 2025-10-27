@@ -1,4 +1,82 @@
-//case 'PROPAL_CREATE':
+ code here
+		//switch ($action) {  // @phan-suppress-current-line PhanNoopSwitchCases
+			// Users
+			//case 'USER_CREATE':
+			//case 'USER_MODIFY':
+			//case 'USER_NEW_PASSWORD':
+			//case 'USER_ENABLEDISABLE':
+		//case 'USER_DELETE':
+
+			// Actions
+			//case 'ACTION_MODIFY':
+			//case 'ACTION_CREATE':
+			//case 'ACTION_DELETE':
+
+			// Groups
+			//case 'USERGROUP_CREATE':
+			//case 'USERGROUP_MODIFY':
+			//case 'USERGROUP_DELETE':
+
+			// Companies
+			//case 'COMPANY_CREATE':
+			//case 'COMPANY_MODIFY':
+			//case 'COMPANY_DELETE':
+
+			// Contacts
+			//case 'CONTACT_CREATE':
+			//case 'CONTACT_MODIFY':
+			//case 'CONTACT_DELETE':
+			//case 'CONTACT_ENABLEDISABLE':
+
+			// Products
+			//case 'PRODUCT_CREATE':
+			//case 'PRODUCT_MODIFY':
+			//case 'PRODUCT_DELETE':
+			//case 'PRODUCT_PRICE_MODIFY':
+			//case 'PRODUCT_SET_MULTILANGS':
+			//case 'PRODUCT_DEL_MULTILANGS':
+
+			//Stock movement
+			//case 'STOCK_MOVEMENT':
+
+			//MYECMDIR
+			//case 'MYECMDIR_CREATE':
+			//case 'MYECMDIR_MODIFY':
+			//case 'MYECMDIR_DELETE':
+
+			// Sales orders
+			//case 'ORDER_CREATE':
+			//case 'ORDER_MODIFY':
+			//case 'ORDER_VALIDATE':
+			//case 'ORDER_DELETE':
+			//case 'ORDER_CANCEL':
+			//case 'ORDER_SENTBYMAIL':
+			//case 'ORDER_CLASSIFY_BILLED':		// TODO Replace it with ORDER_BILLED
+			//case 'ORDER_CLASSIFY_UNBILLED':	// TODO Replace it with ORDER_UNBILLED
+			//case 'ORDER_SETDRAFT':
+			//case 'LINEORDER_INSERT':
+			//case 'LINEORDER_MODIFY':
+			//case 'LINEORDER_DELETE':
+
+			// Supplier orders
+			//case 'ORDER_SUPPLIER_CREATE':
+			//case 'ORDER_SUPPLIER_MODIFY':
+			//case 'ORDER_SUPPLIER_VALIDATE':
+			//case 'ORDER_SUPPLIER_DELETE':
+			//case 'ORDER_SUPPLIER_APPROVE':
+			//case 'ORDER_SUPPLIER_CLASSIFY_BILLED':		// TODO Replace with ORDER_SUPPLIER_BILLED
+			//case 'ORDER_SUPPLIER_CLASSIFY_UNBILLED':		// TODO Replace with ORDER_SUPPLIER_UNBILLED
+			//case 'ORDER_SUPPLIER_REFUSE':
+			//case 'ORDER_SUPPLIER_CANCEL':
+			//case 'ORDER_SUPPLIER_SENTBYMAIL':
+			//case 'ORDER_SUPPLIER_RECEIVE':
+			//case 'LINEORDER_SUPPLIER_DISPATCH':
+			//case 'LINEORDER_SUPPLIER_CREATE':
+			//case 'LINEORDER_SUPPLIER_MODIFY':
+			//case 'LINEORDER_SUPPLIER_DELETE':
+
+			// Proposals
+			//case 'PROPAL_CREATE':
 			//case 'PROPAL_MODIFY':
 			//case 'PROPAL_VALIDATE':
 			//case 'PROPAL_SENTBYMAIL':
@@ -172,7 +250,6 @@
 }
 
 // TODO: could not locate method companyCreate
-
 >>>file: custom/dolielec/core/triggers/interface_99_moddolielec_ProfitTriggers.class.php
 <?php
 require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
@@ -212,7 +289,6 @@ class InterfaceProfitTriggers extends DolibarrTriggers {
              dol_syslog(__METHOD__.': Precio calculado automáticamente: '.$result['price'].' EUR', LOG_INFO);
         return 0;
     }
-
 }>>>file: custom/dolielec/css/dolielec.css.php
 <?php
 // dolielec.css.php - CSS accesible para el módulo Dolielec (bloque 17)
@@ -256,7 +332,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .biel-identity li{margin:.25rem 0}
 .biel-identity code{padding:.1rem .3rem;border:1px solid #888;border-radius:.2rem}
 @media (max-width: 360px){ .biel-identity{max-width:100%;word-break:break-word;overflow-wrap:anywhere} }
-
 >>>file: custom/dolielec/includes/certificates.inc.php
 <?php
 // custom/dolielec/includes/certificates.inc.php
@@ -594,7 +669,6 @@ if ($action === 'brie' || empty($action) || $action === 'brie_save') {
     print '</div>';
     print '</form>';
 }
-
 >>>file: custom/dolielec/includes/sign.inc.php
 <?php
 // sig_form.inc.php – formulario de firma de PDF con certificado digital
@@ -629,7 +703,6 @@ print '</form>';
 // Carga JS para firma
 print '<script type="text/javascript" src="'.dol_buildpath('/custom/dolielec/js/doc.js.php',1).'"></script>';
 ?>
-
 >>>file: custom/dolielec/js/anthropic.js.php
 <?php
 $res = 0;
@@ -777,7 +850,6 @@ if (!$('#anthropic_api_key').length) return;
     });
 
 });
-
 >>>file: custom/dolielec/js/doc.js.php
 <?php
 // doc.js.php � dolielec documentation manager JavaScript file.
@@ -902,7 +974,6 @@ jQuery(document).ready(function($) {
     syncTierra(); syncAislamiento(); syncAscensor();
   });
 });
-
 >>>file: custom/dolielec/js/dolielec.js.php
 <?php
 $res = 0;
@@ -1010,7 +1081,6 @@ global $langs; $langs->loadLangs(array('dolielec@dolielec'));
     on(prov, 'change', syncApiKey);
     syncApiKey();
   });
-
 })();>>>file: custom/dolielec/js/google.js.php
 <?php
 $res = 0;
@@ -1087,82 +1157,4 @@ if (!$('#google_api_key').length) return;
 
                             $modelSelect.val(response.default_model);
 
-                        }
-
-                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionSuccess")); ?>");
-
-                    } else {
-
-                        alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("NoModels")); ?>");
-
-                    }
-
-                } else {
-
-                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
-
-                }
-
-            },
-
-            error: function(xhr, status, error) {
-
-                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("ConnectionFailed")); ?>");
-
-            }
-
-        });
-
-    });
-
-    // Botón: comprobar saldo
-
-    $('#check_api_balance').click(function(e) {
-
-        e.preventDefault();
-
-        $.ajax({
-
-            url: "<?php echo dol_buildpath('/custom/dolielec/ajax/openai.ajax.php', 1); ?>",
-
-            method: "POST",
-
-            dataType: "json",
-
-            data: {
-
-                action: "check_api_balance"
-
-            },
-
-            success: function(response) {
-
-                if (response.success && typeof response.saldo_eur !== "undefined") {
-
-                    alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_Balance")); ?>: " + response.saldo_eur + " €");
-
-                } else {
-
-                    alert(response.message || "<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
-
-                }
-
-            },
-
-            error: function(xhr, status, error) {
-
-                alert("<?php echo dol_escape_js($langs->transnoentitiesnoconv("DoliElec_ErrorBalance")); ?>");
-
-            }
-
-        });
-
-    });
-
-});
-
->>>file: custom/dolielec/js/openai.js.php
-<?php
-$res = 0;
-if (! $res && file_exists("../../main.inc.php")) $res = @include("../../main.inc.php");
-if (! $res && file_exists("../../../main.inc.php")) $res = @include("../..
+            �

@@ -1,5 +1,5 @@
 -- Cache de costes por tercero/contexto
-<CREATE TABLE IF NOT EXISTS llx_dolielec_cost_cache (
+CREATE TABLE IF NOT EXISTS llx_dolielec_cost_cache (
   rowid integer AUTO_INCREMENT PRIMARY KEY,
   entity integer NOT NULL DEFAULT 1,
   fk_thirdparty integer NOT NULL,
@@ -8,43 +8,53 @@
   tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_entity_third_ctx (entity, fk_thirdparty, context_key)
 ) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Entrenamiento de biel
 CREATE TABLE IF NOT EXISTS llx_dolielec_biel_learn (
-rowid integer AUTO_INCREMENT primary key,
-entity integer not null default 1,
-fk_blockid integer not null,
-fk_sublock integer,
-ctx MEDIUMTEXT not null,
-tms timestamp not null default current_timestamp on update current_timestamp,
-unique key BlockLearningID(fk_blockid, fk_sublock))
-engine=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
--- frases para relación psicológica orientada
-create table if not exists llx_dolielec_rpo (
-rowid integer AUTO_INCREMENT primary key,
-entity integer not null default 1,
-rpoid varchar(10) not null,
-rpo_sentence varchar(255) not null,
-unique key RPO(rpoid))
-engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+  entity integer NOT NULL DEFAULT 1,
+  fk_blockid integer NOT NULL,
+  fk_sublock integer,
+  ctx MEDIUMTEXT NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY BlockLearningID(fk_blockid, fk_sublock)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS llx_dolielec_openai_balance(
-rowid integer auto_increment not null primary key,
-idmodel varchar(5) not null,
-total decimal not null,
-unique key tokenid (idmodel))
-engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
-CREATE TABLE IF NOT EXISTS llx_dolielec_anthropic_balance(
-rowid integer auto_increment not null primary key,
-idmodel varchar(5) not null,
-total decimal not null,
-tms timestamp not null default current_timestamp on update current_timestamp,
-unique key tokenid (idmodel))
-engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+-- Frases para relación psicológica orientada
+CREATE TABLE IF NOT EXISTS llx_dolielec_rpo (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+  entity integer NOT NULL DEFAULT 1,
+  rpoid varchar(10) NOT NULL,
+  rpo_sentence varchar(255) NOT NULL,
+  UNIQUE KEY RPO(rpoid)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS llx_dolielec_memories(
-rowid integer auto_increment not null,
-msgid varchar(50) not null,
-message text not null,
-tms timestamp not null default current_timestamp on update current_timestamp,
-unique key id(msgid))
-engine=innodb DEFAULT CHARSET=utf8mb4_unicode_ci COLLATE=utf8mb4_unicode_ci;
+-- Balance OpenAI
+CREATE TABLE IF NOT EXISTS llx_dolielec_openai_balance (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+entity integer NOT NULL DEFAULT 1,
+  idmodel varchar(50) NOT NULL,
+  total decimal(10,2) NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY tokenid (idmodel)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Balance Anthropic
+CREATE TABLE IF NOT EXISTS llx_dolielec_anthropic_balance (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+entity integer NOT NULL DEFAULT 1,
+  idmodel varchar(50) NOT NULL,
+  total decimal(10,2) NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY tokenid (idmodel)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Memorias del sistema
+CREATE TABLE IF NOT EXISTS llx_dolielec_memories (
+  rowid integer AUTO_INCREMENT PRIMARY KEY,
+entity integer NOT NULL DEFAULT 1,
+  msgid varchar(50) NOT NULL,
+  message LONGTEXT NOT NULL,
+  tms timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY id(msgid)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

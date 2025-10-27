@@ -3,17 +3,20 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/custom/dolielec/lib/dolielec.lib.php';
+
 class OpenAI {
     private $db;
     private $api_key;
     private $endpoint;
+    
     public function __construct($db) {
         global $conf, $langs;
-		$langs->loadLangs(array('dolielec@dolielec'));
+        $langs->loadLangs(array('dolielec@dolielec'));
         $this->db = $db;
         $this->api_key = !empty($conf->global->OPENAI_API_KEY) ? $conf->global->OPENAI_API_KEY : getDolGlobalString('OPENAI_API_KEY', '');
         $this->endpoint = 'https://api.openai.com/v1/';
     }
+    
     private function call($path, $method = 'GET', $data = null, $api = '') {
         global $langs;
         $api = ($api !== '') ? $api : $this->api_key;
@@ -48,6 +51,7 @@ class OpenAI {
             'raw' => isset($resp['raw']) ? $resp['raw'] : null,
         );
     }
+    
     public function getModels($api = '') {
         global $langs;
         $resp = $this->call('models', 'GET', null, $api);
@@ -58,51 +62,87 @@ class OpenAI {
         if (!is_array($json) || empty($json['data']) || !is_array($json['data'])) {
             return array('success' => false, 'message' => $langs->trans('NoModels'), 'http' => $resp['http'] ?? null, 'raw' => $resp['raw'] ?? null);
         }
-                $blocked_patterns = array();
+        
+        // Filtrado de modelos (vacío = todos permitidos)
+        $blocked_patterns = array();
         $filtered = array();
+        
         foreach ($json['data'] as $m) {
             $id = is_array($m) ? ($m['id'] ?? '') : (string)$m;
             if ($id === '') {
-				continue;
-			}
+                continue;
+            }
             $blocked = false;
-            foreach ($blocked_patterns as $patterns) {
-                if (stripos($id, $patterns) !== false) {
-					$blocked = true;
-					break;
-					}
+            foreach ($blocked_patterns as $pattern) {
+                if (stripos($id, $pattern) !== false) {
+                    $blocked = true;
+                    break;
+                }
             }
             if (!$blocked) {
-				$filtered[] = $id;
+                $filtered[] = $id;
+            }
         }
-			}
+        
         $filtered = array_values(array_unique($filtered));
+        
         if (empty($filtered)) {
             return array('success' => false, 'message' => $langs->trans('NoModels'));
         }
-
+        
         return array('success' => true, 'models' => $filtered);
     }
-	public function setPrompt($temp = null, $top = null, $model = null, $reason = null, $maxt = null, $system = '', $user = '', $tools = null, $api = '') {
-		$temp = (!empty($temp) && $temp !== null) ? $temp : getDolGlobalFloat('OPENAI_TEMPERATURE');
-$top = (!empty($top) && $top !== null) ? $top : getDolGlobalFloat('OPENAI_TOP_P');
-$model = (!empty($model)) ? $model : getDolGlobalString('OPENAI_DEFAULT_MODEL');
-$reason = (!empty($reason)) ? $reason : 'medium';
-$maxt = (!empty($maxt) && $maxt !== null) ? $maxt : getDolGlobalInt('OPENAI_MAX_TOKENS');
-														$data = array('temperature' => $temp, 'top_p' => $top, 'model' => $model, 'max_tokens' => $maxt, 'messages' => array(array('role' => 'system', 'content' => $system), array('role' => 'user', 'content' => $user)));
-				if(is_array($tools) && !empty($tools)) {
-					if(isset($tools['type']) || isset($tools['function'])) {
-						$tools = array($tools);
-								}
-					$data['tools'] = $tools;
-			$data['tool_choice'] = 'auto';
-		}
-		if(stripos($model, 'o1') !== false || stripos($model, 'o1pro') !== false || stripos($model, 'o3') !== false) {
-			unset($data['temperature']);
-			unset($data['top_p']);
-			$data['reasoning_effort'] = $reason;
-		}
-		$resp = $this->call('chat/completions', 'POST', $data, $api);
-return $resp;
-	}		
+    
+    /**
+     * Enviar prompt a OpenAI
+     * 
+     * @param float|null $temp Temperature (0.0-2.0)
+     * @param float|null $top Top P (0.0-1.0)
+     * @param string|null $model Modelo a usar
+     * @param string|null $reason Reasoning effort para o1/o3 (low/medium/high)
+     * @param int|null $maxt Max tokens
+     * @param string $system System prompt
+     * @param string $user User prompt
+     * @param array|null $tools Tools array (opcional)
+     * @param string $api API key override (opcional)
+     * @return array Response con success, json, raw, message
+     */
+    public function setPrompt($temp = null, $top = null, $model = null, $reason = null, $maxt = null, $system = '', $user = '', $tools = null, $api = '') {
+        $temp = ($temp !== null) ? $temp : getDolGlobalFloat('OPENAI_TEMPERATURE', 0.2);
+        $top = ($top !== null) ? $top : getDolGlobalFloat('OPENAI_TOP_P', 0.8);
+        $model = (!empty($model)) ? $model : getDolGlobalString('OPENAI_DEFAULT_MODEL', 'gpt-5');
+        $reason = (!empty($reason)) ? $reason : 'medium';
+        $maxt = ($maxt !== null) ? $maxt : getDolGlobalInt('OPENAI_MAX_TOKENS', 800);
+                // Construcción del array de datos
+        $data = array(
+            'model' => $model,
+            'max_tokens' => $maxt,
+            'messages' => array()
+        );
+                        if (!empty($system)) {
+            $data['messages'][] = array('role' => 'system', 'content' => $system);
+        }
+                $data['messages'][] = array('role' => 'user', 'content' => $user);
+                if (is_array($tools) && !empty($tools)) {
+            if (isset($tools['type']) || isset($tools['function'])) {
+                $tools = array($tools);
+            }
+            $data['tools'] = $tools;
+            $data['tool_choice'] = 'auto';
+        }
+                // Modelos o1/o3 usan reasoning_effort en lugar de temperature
+        if (stripos($model, 'o1') !== false || stripos($model, 'o3') !== false) {
+            $data['reasoning_effort'] = $reason;
+        } else {
+            // Modelos estándar usan temperature y top_p
+            if ($temp !== null) {
+                $data['temperature'] = $temp;
+            }
+            if ($top !== null) {
+                $data['top_p'] = $top;
+            }
+        }
+             $resp = $this->call('chat/completions', 'POST', $data, $api);
+        return $resp;
+    }
 }

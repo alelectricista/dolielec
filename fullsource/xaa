@@ -102,7 +102,6 @@ print '<div class="center">';
 print '<input type="submit" class="button button-save" value="' . $langs->trans("Save") . '">';
 print '</div>';
 print '</form>';
-
 ?>>>>file: custom/dolielec/admin/doc.php
 <?php
 //doc.php - IDM configuration file.
@@ -282,7 +281,6 @@ if (is_array($scan_info)) {
     print '<tr><td>'.$langs->trans("ValidTo").'</td><td>'.dol_escape_htmltag($validTo).'</td></tr>';
     print '</table></div>';
 }
-
 ?>>>>file: custom/dolielec/admin/geoloc.php
 <?php
 // geoloc.php — configuración de geolocalización (estilo openai.php limpio)
@@ -610,7 +608,6 @@ if (file_exists(DOL_DOCUMENT_ROOT . $js)) {
 }
 
 llxFooter();
-
 >>>file: custom/dolielec/admin/google.php
 <?php
 //google.php, page configuration for googleAI parameters configuration
@@ -653,7 +650,6 @@ print '<div class="center">';
 print '<input type="submit" class="button button-save" value="' . $langs->trans("Save") . '">';
 print '</div>';
 print '</form>';
-
 ?>>>>file: custom/dolielec/admin/openai.php
 <?php
 
@@ -758,7 +754,6 @@ print '<div class="center">';
 print '<input type="submit" class="button button-save" value="' . $langs->trans("Save") . '">';
 print '</div>';
 print '</form>';
-
 ?>>>>file: custom/dolielec/admin/setup.php
 <?php
 $res = 0;
@@ -806,4 +801,4 @@ print load_fiche_titre($langs->trans('DoliElecSetup'), $linkback, 'title_setup')
 $head = dolielecAdminPrepareHead();
  dol_fiche_head($head, $tab, $langs->trans('DoliElecSetup'), -1, 'dolielec@dolielec');
 $base = __DIR__;
-include 
+include $base
